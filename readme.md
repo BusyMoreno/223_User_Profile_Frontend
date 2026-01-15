@@ -1,96 +1,104 @@
-# uk223 Skeleton
+# User Profile Frontend (UK223)
+
+Frontend für User-/Rollen-/Authority-Verwaltung mit Login, geschützten Routen und einer Startseite für eingeloggte Nutzer.
 
 ## Quick Links
-- Homepage: http://localhost:3000
-- Login: http://localhost:3000/login
-- User Component: http://localhost:3000/users
 
-## Prerequisites
+Die genaue URL/Port hängt von deiner lokalen Vite-Konfiguration ab. Nach `yarn dev` zeigt das Terminal die URL (meist `http://localhost:5173`).
 
-Before you start, make sure you have the following installed on your computer:
+- **Start**: `/`
+- **Login**: `/login`
+- **Users (Tabelle)**: `/user`
+- **User anlegen**: `/user/edit`
+- **User bearbeiten**: `/user/edit/:userId`
 
-- **Node.js** (version 16 or higher)
-  - Download from: https://nodejs.org/
-  - To check if installed, open a terminal and run: `node --version`
-- **Yarn** (package manager)
-  - After installing Node.js, install Yarn by running: `npm install -g yarn`
-  - To check if installed, run: `yarn --version`
-- **Git** (version control)
-  - Download from: https://git-scm.com/
-  - To check if installed, run: `git --version`
+## Voraussetzungen
 
-## Setup Instructions
+- **Node.js**: empfohlen 16+
+- **Yarn**: `npm install -g yarn`
 
-### 1. Clone the Repository
-
-Open a terminal (Command Prompt, PowerShell, or Terminal) and run:
-
-```bash
-git clone <repository-url>
-cd react_frontend
-```
-
-### 2. Install Dependencies
-
-Install all required packages by running:
+## Setup & Start
 
 ```bash
 yarn install
-```
-
-This will download all the libraries and tools needed for the project.
-
-### 3. Start the Development Server
-
-Run the following command to start the application:
-
-```bash
 yarn dev
 ```
 
-The application will open at http://localhost:3000
+## Wichtige Kommandos
 
-### 4. Stop the Development Server
+- **dev**: `yarn dev`
+- **build**: `yarn build`
+- **preview**: `yarn preview`
+- **tests**: `yarn test`
 
-To stop the server, press `Ctrl + C` in the terminal.
+## Routing (wie die App navigiert)
 
-## Common Commands
+Die Routen sind zentral in `src/Router/Router.tsx` definiert.
 
-- `yarn dev` - Start the development server
-- `yarn build` - Build the application for production
-- `yarn test` - Run tests
-- `yarn preview` - Preview the production build
+- **`/` (Startseite)**:
+  - wenn Token vorhanden → `AuthenticatedHomePage`
+  - sonst → `HomePage`
+- **`/login`**: Login-Seite
+- **`/user`**: geschützte Route über `PrivateRoute`
+- **`/user/edit`** und **`/user/edit/:userId`**: ebenfalls geschützt (mit Authority-Check)
+- **Fallback (`*`)**: redirect auf `/`
 
-## Project Structure
+## Auth & Guards (wie der Zugriff geschützt wird)
+
+### Token-Speicher
+
+- Die App nutzt `localStorage.getItem('token')` als “eingeloggt”-Indikator (Router) und als Basis für weitere Checks.
+
+### `PrivateRoute`
+
+In `src/Router/PrivateRoute.tsx` passiert Folgendes:
+
+- **Login-Check**: Token wird aus `localStorage` gelesen, ggf. `Bearer ` entfernt, dann wird der JWT dekodiert und auf `exp` geprüft.
+- **Logout/Redirect**: wenn nicht eingeloggt → `ActiveUserContext.logout()` + Redirect auf `/login`.
+- **Authority-Check**: wenn `requiredAuths` gesetzt sind → via `AuthorityService.hasAuthority` wird geprüft, ob der aktive User mindestens eine benötigte Authority hat; sonst Redirect auf `/unauthorized`.
+
+## AuthenticatedHomePage (Startseite nach Login)
+
+Die Seite `src/components/pages/AuthenticatedHomePage.tsx`:
+
+- lädt den aktiven User über `ActiveUserContext.loadActiveUser()`, falls noch nicht vorhanden
+- zeigt User-Infos (Name/Email/Rollen) an
+- bietet Aktionen:
+  - **Manage Users** → navigiert auf `/user`
+  - **Logout** → `ActiveUserContext.logout()`
+
+## Was zuletzt gefixt / ergänzt wurde
+
+- **`AuthenticatedHomePage`**
+  - falscher Logo-Import wurde korrigiert (`src/logo1.png`)
+  - `export default` ergänzt, damit der Import im Router sauber funktioniert
+- **`Router`**
+  - Router rendert nicht mehr “außerhalb” der `Routes`, sondern entscheidet innerhalb von `/`, ob `AuthenticatedHomePage` oder `HomePage` angezeigt wird
+  - `*` Route macht jetzt einen Redirect auf `/` statt “Not Found”
+- **TypeScript: Image Imports**
+  - neues `src/types/images.d.ts` ergänzt, damit TS Image-Imports (png/jpg/svg/…) kennt
+
+## Projektstruktur (relevant)
 
 ```
-react_frontend/
-├── src/               # Source code
-│   ├── components/    # React components
-│   ├── pages/         # Page components
-│   └── ...
-├── public/            # Static files
-├── package.json       # Project dependencies
-└── README.md          # This file
+.
+├── src/
+│   ├── components/pages/        # Seiten (Home/Login/User/AuthenticatedHomePage)
+│   ├── Contexts/                # z.B. ActiveUserContext (User/Session)
+│   ├── Router/                  # Router.tsx + PrivateRoute.tsx
+│   ├── Services/                # API/Business-Logik (User/Role/Authority)
+│   └── types/                   # Models + images.d.ts
+├── public/                      # statische Assets
+├── vite.config.ts
+└── package.json
 ```
 
 ## Troubleshooting
 
-### Port Already in Use
+- **Port/URL unklar**: nach `yarn dev` die URL aus der Konsole nehmen.
+- **Install-Probleme**:
 
-If you see an error that port 3000 is already in use:
-1. Stop any other applications running on port 3000
-2. Or change the port in your configuration
-
-### Installation Errors
-
-If you encounter errors during `yarn install`:
-1. Delete the `node_modules` folder and `yarn.lock` file
-2. Run `yarn install` again
-3. Make sure you have the correct Node.js version (16+)
-
-### Need Help?
-
-If you're stuck, ask your instructor or check the project documentation.
-
-## Components
+```bash
+rm -rf node_modules
+yarn install
+```
