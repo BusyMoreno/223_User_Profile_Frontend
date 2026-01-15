@@ -2,6 +2,9 @@ import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
+import Avatar from '@mui/material/Avatar';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { User } from '../../../types/models/User.model';
 import UserService from '../../../Services/UserService';
@@ -18,50 +21,75 @@ const UserTable = () => {
   }, []);
 
   const handleAdd = () => {
-    navigate('../useredit/');
+    navigate('../user/edit/');
   };
 
   const handleEdit = (id: string) => {
-    navigate('../useredit/' + id);
+    navigate('../user/edit/' + id);
   };
 
-  const handleDelete = (id: string) => {
-    UserService.deleteUser(id);
+  const handleDelete = async (id: string) => {
+    await UserService.deleteUser(id);
+    setUsers((prev) => prev.filter((u) => u.id !== id));
   };
 
   return (
     <>
       {users.map((user) => (
-        <div key={user.id}>
-          <Card sx={{ minWidth: 275 }}>
-            <CardContent>
-              {user.firstName} {user.lastName} {user.email}
-              <CardActions>
-                <Button
-                  size='small'
-                  color='primary'
-                  variant='contained'
-                  onClick={() => handleEdit(user.id)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  size='small'
-                  color='error'
-                  variant='contained'
-                  onClick={() => handleDelete(user.id)}
-                >
-                  Delete
-                </Button>
-              </CardActions>
-            </CardContent>
-          </Card>
-        </div>
+        <Card key={user.id} sx={{ minWidth: 275, mb: 2 }}>
+          <CardContent>
+            <Stack direction="row" spacing={2} alignItems="center">
+              {/* ✅ PROFILE IMAGE */}
+              <Avatar
+                src={
+                  user.profileImageUrl &&
+                  user.profileImageUrl.startsWith('http')
+                    ? user.profileImageUrl
+                    : undefined
+                }
+                alt={`${user.firstName} ${user.lastName}`}
+                sx={{ width: 64, height: 64 }}
+              />
+
+              {/* USER DATA */}
+              <Stack>
+                <Typography variant="h6">
+                  {user.firstName} {user.lastName}
+                </Typography>
+                <Typography variant="body2">{user.email}</Typography>
+                <Typography variant="body2">{user.address}</Typography>
+                <Typography variant="body2">
+                  {user.birthDate}
+                </Typography>
+              </Stack>
+            </Stack>
+          </CardContent>
+
+          <CardActions>
+            <Button
+              size="small"
+              color="primary"
+              variant="contained"
+              onClick={() => handleEdit(user.id)}
+            >
+              Edit
+            </Button>
+            <Button
+              size="small"
+              color="error"
+              variant="contained"
+              onClick={() => handleDelete(user.id)}
+            >
+              Delete
+            </Button>
+          </CardActions>
+        </Card>
       ))}
+
       <Button
-        size='small'
-        color='success'
-        variant='contained'
+        size="small"
+        color="success"
+        variant="contained"
         onClick={handleAdd}
       >
         Add

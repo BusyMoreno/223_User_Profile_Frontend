@@ -9,4 +9,5 @@ export type User = {
   address: string;
   birthDate: string;
   profileImageUrl: string;
+  password?: string;
 };
