@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import LoginPage from '../components/pages/LoginPage/LoginPage';
+import AdminPage from '../components/pages/AdminPage/AdminPage';
 import PrivateRoute from './PrivateRoute';
 import HomePage from '../components/pages/HomePage';
 import AuthenticatedHomePage from '../components/pages/AuthenticatedHomePage';
@@ -24,6 +25,10 @@ const Router = () => {
         element={isLoggedIn() ? <AuthenticatedHomePage /> : <HomePage />}
       />
       <Route path={'/login'} element={<LoginPage />} />
+      <Route
+        path={'/admin'}
+        element={<PrivateRoute requiredAuths={[]} element={<AdminPage />} />}
+      />
 
       <Route
         path={'/user'}

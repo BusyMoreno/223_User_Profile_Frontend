@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import * as jwt from 'jsonwebtoken';
 import ActiveUserContext from '../Contexts/ActiveUserContext';
 import AuthorityService from '../Services/AuthorityService';
@@ -21,6 +21,7 @@ const PrivateRoute: React.FC<Props> = ({
   element: RouteComponent,
 }) => {
   const activeUserContext = useContext(ActiveUserContext);
+  const navigate = useNavigate();
   /**
    * isLoggedIn checks if the token, which is saved inside the localStorage,
    * exists, isn't expired yet and has been issued by the correct issuer.
@@ -66,7 +67,12 @@ const PrivateRoute: React.FC<Props> = ({
   return (
     //Pagelayout puts the Navigation, Menu etc. around the component
     <div>
-      <Button onClick={activeUserContext.logout}>Logout</Button>
+      <div>
+        {activeUserContext.checkRole('ADMIN') && (
+          <Button onClick={() => navigate('/admin')}>Admin</Button>
+        )}
+        <Button onClick={activeUserContext.logout}>Logout</Button>
+      </div>
       {RouteComponent}
     </div>
   );

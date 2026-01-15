@@ -43,7 +43,7 @@ const Login = () => {
         if (
           (typeof error.response !== 'undefined' &&
             error.response.status === 401) ||
-          error.response.status === 403
+            error.response.status === 403
         ) {
           alert('invalid login');
         } else {
@@ -112,6 +112,15 @@ const Login = () => {
                 fullWidth
               >
                 Sign in
+              </Button>
+              <Button
+                type='button'
+                color='inherit'
+                variant='contained'
+                style={btnstyle}
+                fullWidth
+              >
+                Admin Login
               </Button>
             </Form>
           )}
