@@ -1,7 +1,9 @@
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import LoginPage from '../components/pages/LoginPage/LoginPage';
+import AdminPage from '../components/pages/AdminPage/AdminPage';
 import PrivateRoute from './PrivateRoute';
 import HomePage from '../components/pages/HomePage';
+import AuthenticatedHomePage from '../components/pages/AuthenticatedHomePage';
 import UserTable from '../components/pages/UserPage/UserTable';
 import UserPage from '../components/pages/UserPage/UserPage';
 import authorities from '../config/Authorities';
@@ -14,10 +16,19 @@ const Router = () => {
 
   /** navigate to different "home"-locations depending on Role the user have */
 
+  const isLoggedIn = () => localStorage.getItem('token') !== null;
+
   return (
     <Routes>
-      <Route path={'/'} element={<HomePage />} />
+      <Route
+        path={'/'}
+        element={isLoggedIn() ? <AuthenticatedHomePage /> : <HomePage />}
+      />
       <Route path={'/login'} element={<LoginPage />} />
+      <Route
+        path={'/admin'}
+        element={<PrivateRoute requiredAuths={[]} element={<AdminPage />} />}
+      />
 
       <Route
         path={'/user'}
@@ -42,7 +53,7 @@ const Router = () => {
         }
       />
 
-      <Route path='*' element={<div>Not Found</div>} />
+      <Route path='*' element={<Navigate to='/' replace />} />
     </Routes>
   );
 };
