@@ -6,4 +6,7 @@ export type User = {
   firstName: string;
   lastName: string;
   roles: Role[];
+  address: string;
+  birthDate: string;
+  profileImageUrl: string;
 };
