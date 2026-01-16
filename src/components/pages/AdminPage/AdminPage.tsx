@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -22,17 +22,18 @@ import {
   FormControlLabel,
   Alert,
   CircularProgress,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-} from '@mui/icons-material';
-import ActiveUserContext from '../../../Contexts/ActiveUserContext';
-import UserService from '../../../Services/UserService';
-import RoleService from '../../../Services/RoleService';
-import { User } from '../../../types/models/User.model';
-import { Role } from '../../../types/models/Role.model';
+} from "@mui/icons-material";
+import ActiveUserContext from "../../../Contexts/ActiveUserContext";
+import UserService from "../../../Services/UserService";
+import RoleService from "../../../Services/RoleService";
+import { User } from "../../../types/models/User.model";
+import { Role } from "../../../types/models/Role.model";
+import TextField from "@mui/material/TextField";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -63,21 +64,30 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  
+
   // Dialog states
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
-  if (!checkRole('ADMIN')) {
+  const [filters, setFilters] = useState({
+    firstName: "",
+    lastName: "",
+    minAge: undefined as number | undefined,
+    maxAge: undefined as number | undefined,
+    page: 0,
+    size: 10,
+  });
+
+  if (!checkRole("ADMIN")) {
     return (
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '50vh',
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "50vh",
           p: 3,
         }}
       >
@@ -93,23 +103,38 @@ const AdminPage = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [filters]);
 
   const loadData = async () => {
     setLoading(true);
     setError(null);
+
     try {
-      // Load users first
-      const usersResponse = await UserService.getAllUsers();
+      const hasFilters =
+        filters.firstName ||
+        filters.lastName ||
+        filters.minAge !== undefined ||
+        filters.maxAge !== undefined;
+
+      const usersResponse = hasFilters
+        ? await UserService.getFilteredUsers({
+            firstName: filters.firstName || undefined,
+            lastName: filters.lastName || undefined,
+            minAge: filters.minAge,
+            maxAge: filters.maxAge,
+          })
+        : await UserService.getAllUsers();
+
       setUsers(usersResponse.data);
 
-      // Try to load roles from API, fallback to extracting from users if endpoint doesn't exist
       try {
         const rolesResponse = await RoleService.findAll();
         setRoles(rolesResponse.data);
       } catch (rolesError: any) {
-        // If /roles endpoint doesn't exist (404), extract unique roles from users
-        if (rolesError.response?.status === 404 || rolesError.message?.includes('404')) {
+        if (
+          rolesError.response?.status === 404 ||
+          rolesError.message?.includes("404")
+        ) {
           const uniqueRolesMap = new Map<string, Role>();
           usersResponse.data.forEach((user: User) => {
             user.roles.forEach((role: Role) => {
@@ -119,14 +144,12 @@ const AdminPage = () => {
             });
           });
           setRoles(Array.from(uniqueRolesMap.values()));
-          console.warn('Roles endpoint not found, using roles from user data');
         } else {
           throw rolesError;
         }
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to load data');
-      console.error('Error loading admin data:', err);
+      setError(err.message || "Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -173,18 +196,18 @@ const AdminPage = () => {
       };
 
       await UserService.updateUser(updatedUser);
-      setSuccess('Roles updated successfully');
+      setSuccess("Roles updated successfully");
       await loadData();
       handleCloseRoleDialog();
     } catch (err: any) {
-      setError(err.message || 'Failed to update roles');
+      setError(err.message || "Failed to update roles");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) {
+    if (!window.confirm("Are you sure you want to delete this user?")) {
       return;
     }
 
@@ -194,17 +217,17 @@ const AdminPage = () => {
 
     try {
       await UserService.deleteUser(userId);
-      setSuccess('User deleted successfully');
+      setSuccess("User deleted successfully");
       await loadData();
     } catch (err: any) {
-      setError(err.message || 'Failed to delete user');
+      setError(err.message || "Failed to delete user");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box sx={{ width: '100%', p: 3 }}>
+    <Box sx={{ width: "100%", p: 3 }}>
       <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
         Admin Dashboard
       </Typography>
@@ -225,7 +248,7 @@ const AdminPage = () => {
         </Alert>
       )}
 
-      <Paper sx={{ width: '100%' }}>
+      <Paper sx={{ width: "100%" }}>
         <Tabs
           value={tabValue}
           onChange={handleTabChange}
@@ -239,8 +262,48 @@ const AdminPage = () => {
           <Typography variant="h6" gutterBottom>
             User Management
           </Typography>
+          <Box sx={{ mb: 3, display: "flex", gap: 2, flexWrap: "wrap" }}>
+            <TextField
+              label="First name"
+              value={filters.firstName}
+              onChange={(e) =>
+                setFilters({ ...filters, firstName: e.target.value })
+              }
+            />
+
+            <TextField
+              label="Last name"
+              value={filters.lastName}
+              onChange={(e) =>
+                setFilters({ ...filters, lastName: e.target.value })
+              }
+            />
+
+            <TextField
+              label="Min age"
+              type="number"
+              onChange={(e) =>
+                setFilters({
+                  ...filters,
+                  minAge: e.target.value ? Number(e.target.value) : undefined,
+                })
+              }
+            />
+
+            <TextField
+              label="Max age"
+              type="number"
+              onChange={(e) =>
+                setFilters({
+                  ...filters,
+                  maxAge: e.target.value ? Number(e.target.value) : undefined,
+                })
+              }
+            />
+          </Box>
+
           {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
               <CircularProgress />
             </Box>
           ) : (
@@ -262,7 +325,9 @@ const AdminPage = () => {
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                        <Box
+                          sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}
+                        >
                           {user.roles.map((role) => (
                             <Chip
                               key={role.id}
@@ -308,7 +373,7 @@ const AdminPage = () => {
             Role Management
           </Typography>
           {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
               <CircularProgress />
             </Box>
           ) : (
@@ -331,7 +396,9 @@ const AdminPage = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                        <Box
+                          sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}
+                        >
                           {role.authorities.map((authority) => (
                             <Chip
                               key={authority.id}
@@ -368,7 +435,7 @@ const AdminPage = () => {
           Assign Roles to {selectedUser?.firstName} {selectedUser?.lastName}
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', mt: 1 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", mt: 1 }}>
             {roles.map((role) => (
               <FormControlLabel
                 key={role.id}
@@ -382,7 +449,8 @@ const AdminPage = () => {
                   <Box>
                     <Typography variant="body1">{role.name}</Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {role.authorities.map((a) => a.name).join(', ') || 'No authorities'}
+                      {role.authorities.map((a) => a.name).join(", ") ||
+                        "No authorities"}
                     </Typography>
                   </Box>
                 }

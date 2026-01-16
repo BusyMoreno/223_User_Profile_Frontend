@@ -1,5 +1,5 @@
-import api from '../config/Api';
-import { User } from '../types/models/User.model';
+import api from "../config/Api";
+import { User } from "../types/models/User.model";
 
 const UserService = {
   getUser: async (userID: string): Promise<User> => {
@@ -12,13 +12,30 @@ const UserService = {
   },
 
   addUser: (user: User) => {
-    return api.post('/user/registerUser', user).then((res) => {
+    return api.post("/user/registerUser", user).then((res) => {
       return res.data;
     });
   },
 
   getAllUsers: () => {
-    return api.get(`/user`);
+    return api.get<User[]>(`/user`);
+  },
+
+  getCurrentUser() {
+    return api.get<User>("/user/profile");
+  },
+
+  getFilteredUsers: (params: {
+    minAge?: number;
+    maxAge?: number;
+    firstName?: string;
+    lastName?: string;
+    page?: number;
+    size?: number;
+  }) => {
+    return api.get<User[]>(`/user/admin/search`, {
+      params,
+    });
   },
 
   deleteUser: (id: string) => {

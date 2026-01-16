@@ -68,10 +68,13 @@ const PrivateRoute: React.FC<Props> = ({
     //Pagelayout puts the Navigation, Menu etc. around the component
     <div>
       <div>
+        <Button onClick={() => navigate('/')}>Home</Button>
+        <Button onClick={() => navigate('/user')}>User Profiles</Button>
         {activeUserContext.checkRole('ADMIN') && (
           <Button onClick={() => navigate('/admin')}>Admin</Button>
         )}
         <Button onClick={activeUserContext.logout}>Logout</Button>
+
       </div>
       {RouteComponent}
     </div>
