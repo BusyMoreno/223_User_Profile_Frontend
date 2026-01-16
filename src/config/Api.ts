@@ -20,12 +20,21 @@ const api: AxiosInstance = createAPI();
 /**
  * Set the Authorization header on each request equal to the token which
  * is stored inside the localStorage if a user is authenticated.
+ * Skip Authorization header for public endpoints like registration.
  */
 api.interceptors.request.use(
   (request) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      request.headers.Authorization = token;
+    // Skip Authorization header for public endpoints
+    const publicEndpoints = ['/user/registerUser', '/user/login'];
+    const isPublicEndpoint = publicEndpoints.some(endpoint => 
+      request.url?.includes(endpoint)
+    );
+    
+    if (!isPublicEndpoint) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        request.headers.Authorization = token;
+      }
     }
     return request;
   },
