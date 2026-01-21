@@ -22,12 +22,7 @@ import {
   FormControlLabel,
   Alert,
   CircularProgress,
-<<<<<<< Updated upstream
 } from '@mui/material';
-=======
-  TextField as MuiTextField,
-} from "@mui/material";
->>>>>>> Stashed changes
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -71,33 +66,10 @@ const AdminPage = () => {
   
   // Dialog states
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
-  const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
-<<<<<<< Updated upstream
   if (!checkRole('ADMIN')) {
-=======
-  // Edit user form state
-  const [editUserForm, setEditUserForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    address: "",
-    birthDate: "",
-  });
-
-  const [filters, setFilters] = useState({
-    firstName: "",
-    lastName: "",
-    minAge: undefined as number | undefined,
-    maxAge: undefined as number | undefined,
-    page: 0,
-    size: 10,
-  });
-
-  if (!checkRole("ADMIN")) {
->>>>>>> Stashed changes
     return (
       <Box
         sx={{
@@ -174,74 +146,6 @@ const AdminPage = () => {
     setRoleDialogOpen(false);
     setSelectedUser(null);
     setSelectedRoles([]);
-  };
-
-  const handleOpenEditUserDialog = (user: User) => {
-    setSelectedUser(user);
-    setSelectedRoles(user.roles.map((role) => role.id));
-    setEditUserForm({
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      address: user.profile?.address || "",
-      birthDate: user.profile?.birthDate || "",
-    });
-    setEditUserDialogOpen(true);
-  };
-
-  const handleCloseEditUserDialog = () => {
-    setEditUserDialogOpen(false);
-    setSelectedUser(null);
-    setSelectedRoles([]);
-    setEditUserForm({
-      firstName: "",
-      lastName: "",
-      email: "",
-      address: "",
-      birthDate: "",
-    });
-  };
-
-  const handleEditUserFormChange = (field: string, value: string) => {
-    setEditUserForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleSaveEditUser = async () => {
-    if (!selectedUser) return;
-
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const updatedRoles = roles.filter((role) =>
-        selectedRoles.includes(role.id),
-      );
-      const updatedUser: User = {
-        ...selectedUser,
-        firstName: editUserForm.firstName,
-        lastName: editUserForm.lastName,
-        email: editUserForm.email,
-        roles: updatedRoles,
-        profile: {
-          ...selectedUser.profile,
-          address: editUserForm.address,
-          birthDate: editUserForm.birthDate,
-        },
-      };
-
-      await UserService.updateUser(updatedUser);
-      setSuccess("User updated successfully");
-      await loadData();
-      handleCloseEditUserDialog();
-    } catch (err: any) {
-      setError(err.message || "Failed to update user");
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleRoleToggle = (roleId: string) => {
@@ -378,8 +282,8 @@ const AdminPage = () => {
                       <TableCell align="right">
                         <IconButton
                           color="primary"
-                          onClick={() => handleOpenEditUserDialog(user)}
-                          title="Edit User"
+                          onClick={() => handleOpenRoleDialog(user)}
+                          title="Edit Roles"
                         >
                           <EditIcon />
                         </IconButton>
@@ -494,111 +398,6 @@ const AdminPage = () => {
             disabled={loading}
           >
             Save
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Edit User Dialog */}
-      <Dialog
-        open={editUserDialogOpen}
-        onClose={handleCloseEditUserDialog}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          Edit User: {selectedUser?.firstName} {selectedUser?.lastName}
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              User Information
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                <MuiTextField
-                  sx={{ flex: '1 1 200px' }}
-                  label="First Name"
-                  value={editUserForm.firstName}
-                  onChange={(e) => handleEditUserFormChange("firstName", e.target.value)}
-                  required
-                />
-                <MuiTextField
-                  sx={{ flex: '1 1 200px' }}
-                  label="Last Name"
-                  value={editUserForm.lastName}
-                  onChange={(e) => handleEditUserFormChange("lastName", e.target.value)}
-                  required
-                />
-              </Box>
-              <MuiTextField
-                fullWidth
-                label="Email"
-                type="email"
-                value={editUserForm.email}
-                onChange={(e) => handleEditUserFormChange("email", e.target.value)}
-                required
-              />
-            </Box>
-
-            <Typography variant="h6" gutterBottom>
-              Profile Information
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
-              <MuiTextField
-                fullWidth
-                label="Address"
-                value={editUserForm.address}
-                onChange={(e) => handleEditUserFormChange("address", e.target.value)}
-                multiline
-                rows={2}
-              />
-              <MuiTextField
-                sx={{ maxWidth: '300px' }}
-                label="Birth Date"
-                type="date"
-                value={editUserForm.birthDate}
-                onChange={(e) => handleEditUserFormChange("birthDate", e.target.value)}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-            </Box>
-
-            <Typography variant="h6" gutterBottom>
-              Roles
-            </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", mt: 1 }}>
-              {roles.map((role) => (
-                <FormControlLabel
-                  key={role.id}
-                  control={
-                    <Checkbox
-                      checked={selectedRoles.includes(role.id)}
-                      onChange={() => handleRoleToggle(role.id)}
-                    />
-                  }
-                  label={
-                    <Box>
-                      <Typography variant="body1">{role.name}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {role.authorities?.map((a) => a.name).join(", ") ||
-                          "No authorities"}
-                      </Typography>
-                    </Box>
-                  }
-                />
-              ))}
-            </Box>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseEditUserDialog}>Cancel</Button>
-          <Button
-            onClick={handleSaveEditUser}
-            variant="contained"
-            disabled={loading}
-          >
-            Save Changes
           </Button>
         </DialogActions>
       </Dialog>
