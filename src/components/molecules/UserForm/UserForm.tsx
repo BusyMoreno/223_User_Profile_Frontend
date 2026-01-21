@@ -1,8 +1,24 @@
 import { useFormik } from "formik";
 import { User } from "../../../types/models/User.model";
-import { Box, Button, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Card,
+  CardContent,
+  Typography,
+  Avatar,
+  Divider,
+  Grid,
+  Paper
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { object, string } from "yup";
+import PersonIcon from "@mui/icons-material/Person";
+import EmailIcon from "@mui/icons-material/Email";
+import HomeIcon from "@mui/icons-material/Home";
+import CakeIcon from "@mui/icons-material/Cake";
+import ImageIcon from "@mui/icons-material/Image";
 
 interface UserProps {
   user: User;
@@ -51,124 +67,231 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
   });
 
   return (
-    <form onSubmit={formik.handleSubmit}>
-      <Box sx={{ paddingTop: "15px" }}>
-        <TextField
-          id="firstName"
-          name="firstName"
-          label="Firstname"
-          variant="outlined"
-          sx={{ paddingRight: "10px" }}
-          onBlur={formik.handleBlur}
-          onChange={formik.handleChange}
-          error={Boolean(formik.touched.firstName && formik.errors.firstName)}
-          value={formik.values.firstName}
-        />
+    <Box sx={{ maxWidth: 800, mx: 'auto', p: 2 }}>
+      <form onSubmit={formik.handleSubmit}>
+        {/* Profile Header */}
+        <Paper
+          elevation={2}
+          sx={{
+            p: 3,
+            mb: 3,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white'
+          }}
+        >
+          <Box display="flex" alignItems="center" gap={3}>
+            <Avatar
+              src={formik.values.profile.profileImageUrl || undefined}
+              sx={{
+                width: 80,
+                height: 80,
+                border: '4px solid white',
+                boxShadow: 2
+              }}
+            >
+              <PersonIcon sx={{ fontSize: 40 }} />
+            </Avatar>
+            <Box>
+              <Typography variant="h4" fontWeight="bold">
+                {formik.values.firstName || 'First Name'} {formik.values.lastName || 'Last Name'}
+              </Typography>
+              <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
+                {formik.values.email || 'email@example.com'}
+              </Typography>
+            </Box>
+          </Box>
+        </Paper>
 
-        <TextField
-          id="lastName"
-          name="lastName"
-          label="Lastname"
-          variant="outlined"
-          sx={{ paddingRight: "10px" }}
-          onBlur={formik.handleBlur}
-          onChange={formik.handleChange}
-          error={Boolean(formik.touched.lastName && formik.errors.lastName)}
-          value={formik.values.lastName}
-        />
+        {/* Personal Information Card */}
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <PersonIcon color="primary" />
+              Personal Information
+            </Typography>
+            <Divider sx={{ mb: 3 }} />
 
-        <TextField
-          id="email"
-          name="email"
-          label="E-Mail"
-          variant="outlined"
-          onBlur={formik.handleBlur}
-          onChange={formik.handleChange}
-          error={Boolean(formik.touched.email && formik.errors.email)}
-          helperText={formik.touched.email && formik.errors.email}
-          value={formik.values.email}
-        />
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  id="firstName"
+                  name="firstName"
+                  label="First Name"
+                  variant="outlined"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  error={Boolean(formik.touched.firstName && formik.errors.firstName)}
+                  helperText={formik.touched.firstName && formik.errors.firstName}
+                  value={formik.values.firstName}
+                />
+              </Grid>
 
-        <TextField
-          id="address"
-          name="profile.address"
-          label="Address"
-          variant="outlined"
-          onBlur={formik.handleBlur}
-          onChange={formik.handleChange}
-          value={formik.values.profile.address}
-          error={Boolean(
-            formik.touched.profile?.address && formik.errors.profile?.address
-          )}
-        />
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  id="lastName"
+                  name="lastName"
+                  label="Last Name"
+                  variant="outlined"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  error={Boolean(formik.touched.lastName && formik.errors.lastName)}
+                  helperText={formik.touched.lastName && formik.errors.lastName}
+                  value={formik.values.lastName}
+                />
+              </Grid>
 
-        <TextField
-          id="birthDate"
-          name="profile.birthDate"
-          label="Birth Date"
-          type="date"
-          variant="outlined"
-          InputLabelProps={{ shrink: true }}
-          onBlur={formik.handleBlur}
-          onChange={formik.handleChange}
-          value={formik.values.profile.birthDate}
-          error={Boolean(
-            formik.touched.profile?.birthDate &&
-              formik.errors.profile?.birthDate
-          )}
-        />
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  id="email"
+                  name="email"
+                  label="Email Address"
+                  type="email"
+                  variant="outlined"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  error={Boolean(formik.touched.email && formik.errors.email)}
+                  helperText={formik.touched.email && formik.errors.email}
+                  value={formik.values.email}
+                  InputProps={{
+                    startAdornment: <EmailIcon sx={{ mr: 1, color: 'action.active' }} />
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
 
-        <TextField
-          id="profileImageUrl"
-          name="profile.profileImageUrl"
-          label="Profile Image URL"
-          variant="outlined"
-          onBlur={formik.handleBlur}
-          onChange={formik.handleChange}
-          value={formik.values.profile.profileImageUrl}
-          error={Boolean(
-            formik.touched.profile?.profileImageUrl &&
-              formik.errors.profile?.profileImageUrl
-          )}
-        />
+        {/* Profile Details Card */}
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <HomeIcon color="primary" />
+              Profile Details
+            </Typography>
+            <Divider sx={{ mb: 3 }} />
 
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  id="address"
+                  name="profile.address"
+                  label="Address"
+                  variant="outlined"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  value={formik.values.profile.address}
+                  error={Boolean(
+                    formik.touched.profile?.address && formik.errors.profile?.address
+                  )}
+                  helperText={formik.touched.profile?.address && formik.errors.profile?.address}
+                  InputProps={{
+                    startAdornment: <HomeIcon sx={{ mr: 1, color: 'action.active' }} />
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  id="birthDate"
+                  name="profile.birthDate"
+                  label="Birth Date"
+                  type="date"
+                  variant="outlined"
+                  InputLabelProps={{ shrink: true }}
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  value={formik.values.profile.birthDate}
+                  error={Boolean(
+                    formik.touched.profile?.birthDate &&
+                      formik.errors.profile?.birthDate
+                  )}
+                  helperText={formik.touched.profile?.birthDate && formik.errors.profile?.birthDate}
+                  InputProps={{
+                    startAdornment: <CakeIcon sx={{ mr: 1, color: 'action.active' }} />
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  id="profileImageUrl"
+                  name="profile.profileImageUrl"
+                  label="Profile Image URL"
+                  variant="outlined"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  value={formik.values.profile.profileImageUrl}
+                  error={Boolean(
+                    formik.touched.profile?.profileImageUrl &&
+                      formik.errors.profile?.profileImageUrl
+                  )}
+                  helperText={formik.touched.profile?.profileImageUrl && formik.errors.profile?.profileImageUrl}
+                  InputProps={{
+                    startAdornment: <ImageIcon sx={{ mr: 1, color: 'action.active' }} />
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+
+        {/* Password Section (only for new users) */}
         {!user.id && (
-          <TextField
-            id="password"
-            name="password"
-            label="Password"
-            type="password"
-            variant="outlined"
-            sx={{ paddingRight: "10px" }}
-            onBlur={formik.handleBlur}
-            onChange={formik.handleChange}
-            error={Boolean(formik.touched.password && formik.errors.password)}
-            value={formik.values.password}
-          />
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom color="primary">
+                Account Security
+              </Typography>
+              <Divider sx={{ mb: 3 }} />
+
+              <TextField
+                fullWidth
+                id="password"
+                name="password"
+                label="Password"
+                type="password"
+                variant="outlined"
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                error={Boolean(formik.touched.password && formik.errors.password)}
+                helperText={formik.touched.password && formik.errors.password}
+                value={formik.values.password}
+              />
+            </CardContent>
+          </Card>
         )}
-      </Box>
 
-      <div>
-        <Button
-          sx={{ marginTop: "15px", marginRight: "10px" }}
-          variant="contained"
-          color="success"
-          type="submit"
-          disabled={!(formik.dirty && formik.isValid)}
-        >
-          {user.id ? "Save" : "Add"}
-        </Button>
+        {/* Action Buttons */}
+        <Box display="flex" justifyContent="center" gap={2} sx={{ mt: 4, mb: 4 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            type="submit"
+            disabled={!(formik.dirty && formik.isValid)}
+            sx={{ minWidth: 120, py: 1.5 }}
+          >
+            {user.id ? "Save Changes" : "Create Account"}
+          </Button>
 
-        <Button
-          sx={{ marginTop: "15px" }}
-          variant="contained"
-          color="error"
-          onClick={() => navigate("/user")}
-        >
-          Cancel
-        </Button>
-      </div>
-    </form>
+          <Button
+            variant="outlined"
+            color="secondary"
+            size="large"
+            onClick={() => navigate("/user")}
+            sx={{ minWidth: 120, py: 1.5 }}
+          >
+            Cancel
+          </Button>
+        </Box>
+      </form>
+    </Box>
   );
 };
 
