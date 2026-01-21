@@ -1,18 +1,20 @@
-import { useNavigate, useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { User } from '../../../types/models/User.model';
-import UserService from '../../../Services/UserService';
-import UserForm from '../../molecules/UserForm/UserForm';
+import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { User } from "../../../types/models/User.model";
+import UserService from "../../../Services/UserService";
+import UserForm from "../../molecules/UserForm/UserForm";
 
 const emptyUser: User = {
-  id: '',
-  firstName: '',
-  lastName: '',
-  email: '',
+  id: "",
+  firstName: "",
+  lastName: "",
+  email: "",
   roles: [],
-  address: '',
-  birthDate: '',
-  profileImageUrl: '',
+  profile: {
+    address: "",
+    birthDate: "",
+    profileImageUrl: "",
+  },
 };
 
 const UserPage = () => {
@@ -34,22 +36,31 @@ const UserPage = () => {
     setLoading(true);
 
     try {
+      const userPayload = {
+        id: values.id,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        roles: values.roles,
+        profile: {
+          address: values.profile.address,
+          birthDate: values.profile.birthDate,
+          profileImageUrl: values.profile.profileImageUrl,
+        },
+      };
+
       if (userId) {
         // EDIT
-        await UserService.updateUser(values);
+        await UserService.updateUser(userPayload);
       } else {
         // CREATE
-        await UserService.addUser(values);
+        await UserService.addUser(userPayload);
       }
 
-      navigate('/user');
-        } catch (error: any) {
+      navigate("/user");
+    } catch (error: any) {
       const backendErrors = error.response?.data?.errors;
-
-      if (backendErrors) {
-        throw backendErrors;
-      }
-
+      if (backendErrors) throw backendErrors;
       throw error;
     } finally {
       setLoading(false);
@@ -60,12 +71,7 @@ const UserPage = () => {
     return <div>Loading...</div>;
   }
 
-  return (
-    <UserForm
-      user={user}
-      submitActionHandler={submitActionHandler}
-    />
-  );
+  return <UserForm user={user} submitActionHandler={submitActionHandler} />;
 };
 
 export default UserPage;

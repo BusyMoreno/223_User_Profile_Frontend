@@ -7,8 +7,8 @@ const UserService = {
     return data;
   },
 
-  updateUser: (user: User) => {
-    return api.put(`/user/${user.id}`, user);
+  updateUser: (user: User & { id: string }) => {
+    return api.put(`/user/editUser/${user.id}`, user);
   },
 
   addUser: (user: User) => {

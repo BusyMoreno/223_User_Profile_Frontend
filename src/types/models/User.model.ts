@@ -1,4 +1,10 @@
-import { Role } from './Role.model';
+import { Role } from "./Role.model";
+
+export interface UserProfile {
+  address: string;
+  birthDate: string;
+  profileImageUrl: string;
+}
 
 export type User = {
   id: string;
@@ -6,8 +12,6 @@ export type User = {
   firstName: string;
   lastName: string;
   roles: Role[];
-  address: string;
-  birthDate: string;
-  profileImageUrl: string;
   password?: string;
+  profile: UserProfile;
 };

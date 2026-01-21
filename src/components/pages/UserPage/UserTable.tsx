@@ -14,43 +14,28 @@ import ActiveUserContext from "../../../Contexts/ActiveUserContext";
 const UserTable = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
-
   const activeUserContext = useContext(ActiveUserContext);
 
   useEffect(() => {
-    console.log("Is ADMIN:", activeUserContext.checkRole("ADMIN"));
-
     if (activeUserContext.checkRole("ADMIN")) {
       console.log("Loading ALL users");
       UserService.getAllUsers()
-        .then((res) => {
-          console.log("All users response:", res.data);
-          setUsers(res.data);
-        })
-        .catch((err) => {
-          console.error("Failed to load users:", err);
-          setUsers([]);
-        });
+        .then((res) => setUsers(res.data))
+        .catch(() => setUsers([]));
     } else {
       console.log("Loading CURRENT user");
       UserService.getCurrentUser()
-        .then((res) => {
-          console.log("Current user response:", res.data);
-          setUsers([res.data]);
-        })
-        .catch((err) => {
-          console.error("Failed to load current user:", err);
-          setUsers([]);
-        });
+        .then((res) => setUsers([res.data]))
+        .catch(() => setUsers([]));
     }
   }, []);
 
   const handleAdd = () => {
-    navigate("../user/edit/");
+    navigate("/user/edit");
   };
 
   const handleEdit = (id: string) => {
-    navigate("../user/edit/" + id);
+    navigate(`/user/edit/${id}`);
   };
 
   const handleDelete = async (id: string) => {
@@ -66,8 +51,8 @@ const UserTable = () => {
             <Stack direction="row" spacing={2} alignItems="center">
               <Avatar
                 src={
-                  user.profileImageUrl?.startsWith("http")
-                    ? user.profileImageUrl
+                  user.profile?.profileImageUrl?.startsWith("http")
+                    ? user.profile.profileImageUrl
                     : undefined
                 }
                 alt={`${user.firstName} ${user.lastName}`}
@@ -79,8 +64,10 @@ const UserTable = () => {
                   {user.firstName} {user.lastName}
                 </Typography>
                 <Typography variant="body2">{user.email}</Typography>
-                <Typography variant="body2">{user.address}</Typography>
-                <Typography variant="body2">{user.birthDate}</Typography>
+                <Typography variant="body2">{user.profile?.address}</Typography>
+                <Typography variant="body2">
+                  {user.profile?.birthDate}
+                </Typography>
               </Stack>
             </Stack>
           </CardContent>
@@ -94,26 +81,31 @@ const UserTable = () => {
             >
               Edit
             </Button>
-            <Button
-              size="small"
-              color="error"
-              variant="contained"
-              onClick={() => handleDelete(user.id)}
-            >
-              Delete
-            </Button>
+
+            {activeUserContext.checkRole("ADMIN") && (
+              <Button
+                size="small"
+                color="error"
+                variant="contained"
+                onClick={() => handleDelete(user.id)}
+              >
+                Delete
+              </Button>
+            )}
           </CardActions>
         </Card>
       ))}
 
-      <Button
-        size="small"
-        color="success"
-        variant="contained"
-        onClick={handleAdd}
-      >
-        Add
-      </Button>
+      {activeUserContext.checkRole("ADMIN") && (
+        <Button
+          size="small"
+          color="success"
+          variant="contained"
+          onClick={handleAdd}
+        >
+          Add
+        </Button>
+      )}
     </>
   );
 };
