@@ -43,8 +43,34 @@ const UserTable = () => {
     setUsers((prev) => prev.filter((u) => u.id !== id));
   };
 
+  const handleDeleteMe = async () => {
+    const confirmed = window.confirm(
+      "Do you really want to delete your profile?",
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await UserService.deleteOwnProfile();
+      localStorage.clear();
+      navigate("/login");
+    } catch {
+      alert("Couldn't delete profile.");
+    }
+  };
+
   return (
     <>
+      {activeUserContext.checkRole("ADMIN") && (
+        <Button
+          size="small"
+          color="success"
+          variant="contained"
+          onClick={handleAdd}
+        >
+          Add
+        </Button>
+      )}
       {users.map((user) => (
         <Card key={user.id} sx={{ minWidth: 275, mb: 2 }}>
           <CardContent>
@@ -92,20 +118,20 @@ const UserTable = () => {
                 Delete
               </Button>
             )}
+
+            {!activeUserContext.checkRole("ADMIN") && (
+              <Button
+                size="small"
+                color="error"
+                variant="contained"
+                onClick={handleDeleteMe}
+              >
+                Delete
+              </Button>
+            )}
           </CardActions>
         </Card>
       ))}
-
-      {activeUserContext.checkRole("ADMIN") && (
-        <Button
-          size="small"
-          color="success"
-          variant="contained"
-          onClick={handleAdd}
-        >
-          Add
-        </Button>
-      )}
     </>
   );
 };

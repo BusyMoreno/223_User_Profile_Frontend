@@ -11,11 +11,11 @@ const UserService = {
     return api.put(`/user/editUser/${user.id}`, user);
   },
 
- addUser: (registrationData: UserRegister) => {
-  return api.post("/user/register", registrationData).then((res) => {
-    return res.data;
-  });
-},
+  addUser: (registrationData: UserRegister) => {
+    return api.post("/user/register", registrationData).then((res) => {
+      return res.data;
+    });
+  },
 
   getAllUsers: () => {
     return api.get<User[]>(`/user`);
@@ -40,6 +40,10 @@ const UserService = {
 
   deleteUser: (id: string) => {
     return api.delete(`/user/${id}`);
+  },
+
+  deleteOwnProfile() {
+    return api.delete("/user/me");
   },
 };
 
