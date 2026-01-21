@@ -268,12 +268,14 @@ const AdminPage = () => {
               label="First name"
               value={filters.firstName}
               onChange={(e) => updateFilter({ firstName: e.target.value })}
+              inputProps={{ "data-cy": "filter-first-name" }}
             />
 
             <TextField
               label="Last name"
               value={filters.lastName}
               onChange={(e) => updateFilter({ lastName: e.target.value })}
+              inputProps={{ "data-cy": "filter-last-name" }}
             />
 
             <TextField
@@ -284,6 +286,7 @@ const AdminPage = () => {
                   minAge: e.target.value ? Number(e.target.value) : undefined,
                 })
               }
+              inputProps={{ "data-cy": "filter-min-age" }}
             />
 
             <TextField
@@ -294,6 +297,7 @@ const AdminPage = () => {
                   maxAge: e.target.value ? Number(e.target.value) : undefined,
                 })
               }
+              inputProps={{ "data-cy": "filter-max-age" }}
             />
           </Box>
 
