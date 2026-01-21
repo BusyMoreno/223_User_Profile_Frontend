@@ -44,11 +44,7 @@ const Login = () => {
   };
   const btnstyle = { margin: "8px 0" };
   const navigate = useNavigate();
-  const { login, logout } = useContext(ActiveUserContext);
-
-  useEffect(() => {
-    logout();
-  }, []);
+  const { login } = useContext(ActiveUserContext);
 
   const handleLoginSubmit = (values: { email: string; password: string }) => {
     login(values.email.toLowerCase(), values.password)
