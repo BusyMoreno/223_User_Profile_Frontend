@@ -31,7 +31,28 @@ const signupValidationSchema = Yup.object().shape({
   firstName: Yup.string().required("First name is required"),
   lastName: Yup.string().required("Last name is required"),
   address: Yup.string(),
-  birthDate: Yup.string(),
+
+  birthDate: Yup.string()
+    .required("Birth date is required")
+    .test("is-13", "You must be at least 13 years old", (value) => {
+      if (!value) return false;
+
+      const birth = new Date(value);
+      const today = new Date();
+
+      let age = today.getFullYear() - birth.getFullYear();
+      const monthDiff = today.getMonth() - birth.getMonth();
+
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birth.getDate())
+      ) {
+        age--;
+      }
+
+      return age >= 13;
+    }),
+
   profileImageUrl: Yup.string(),
 });
 

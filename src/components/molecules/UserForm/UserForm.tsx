@@ -32,7 +32,28 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
       email: string().required().email(),
       profile: object({
         address: string().required().min(2).max(100),
-        birthDate: string().required(),
+        birthDate: string().test(
+          "is-13",
+          "You must be at least 13 years old",
+          (value) => {
+            if (!value) return false;
+
+            const birth = new Date(value);
+            const today = new Date();
+
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+
+            if (
+              monthDiff < 0 ||
+              (monthDiff === 0 && today.getDate() < birth.getDate())
+            ) {
+              age--;
+            }
+
+            return age >= 13;
+          },
+        ),
         profileImageUrl: string().required().min(2).max(100),
       }),
       password: string().when("id", {
@@ -98,7 +119,7 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
           onChange={formik.handleChange}
           value={formik.values.profile.address}
           error={Boolean(
-            formik.touched.profile?.address && formik.errors.profile?.address
+            formik.touched.profile?.address && formik.errors.profile?.address,
           )}
         />
 
@@ -114,8 +135,12 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
           value={formik.values.profile.birthDate}
           error={Boolean(
             formik.touched.profile?.birthDate &&
-              formik.errors.profile?.birthDate
+            formik.errors.profile?.birthDate,
           )}
+          helperText={
+            formik.touched.profile?.birthDate &&
+            formik.errors.profile?.birthDate
+          }
         />
 
         <TextField
@@ -128,7 +153,7 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
           value={formik.values.profile.profileImageUrl}
           error={Boolean(
             formik.touched.profile?.profileImageUrl &&
-              formik.errors.profile?.profileImageUrl
+            formik.errors.profile?.profileImageUrl,
           )}
         />
 
