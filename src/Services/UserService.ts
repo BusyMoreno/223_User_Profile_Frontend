@@ -42,6 +42,10 @@ const UserService = {
   deleteUser: (id: string) => {
     return api.delete(`/user/${id}`);
   },
+
+  deleteOwnProfile() {
+    return api.delete("/user/me");
+  },
 };
 
 export default UserService;
