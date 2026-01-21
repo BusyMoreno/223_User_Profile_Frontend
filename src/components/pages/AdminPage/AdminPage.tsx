@@ -70,6 +70,9 @@ const AdminPage = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
+  // Pagination
+  const [hasNextPage, setHasNextPage] = useState(true);
+
   const [filters, setFilters] = useState({
     firstName: "",
     lastName: "",
@@ -78,6 +81,14 @@ const AdminPage = () => {
     page: 0,
     size: 10,
   });
+
+  const updateFilter = (changes: Partial<typeof filters>) => {
+    setFilters((prev) => ({
+      ...prev,
+      ...changes,
+      page: 0,
+    }));
+  };
 
   if (!checkRole("ADMIN")) {
     return (
@@ -102,54 +113,40 @@ const AdminPage = () => {
   }
 
   useEffect(() => {
-    loadData();
+    loadUsers();
   }, [filters]);
 
-  const loadData = async () => {
+  useEffect(() => {
+    loadRoles();
+  }, []);
+
+  const loadRoles = async () => {
+    try {
+      const rolesResponse = await RoleService.findAll();
+      setRoles(rolesResponse.data);
+    } catch (err: any) {
+      console.error("Failed to load roles", err);
+    }
+  };
+
+  const loadUsers = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const hasFilters =
-        filters.firstName ||
-        filters.lastName ||
-        filters.minAge !== undefined ||
-        filters.maxAge !== undefined;
+      const usersResponse = await UserService.getFilteredUsers({
+        firstName: filters.firstName || undefined,
+        lastName: filters.lastName || undefined,
+        minAge: filters.minAge,
+        maxAge: filters.maxAge,
+        page: filters.page,
+        size: filters.size,
+      });
 
-      const usersResponse = hasFilters
-        ? await UserService.getFilteredUsers({
-            firstName: filters.firstName || undefined,
-            lastName: filters.lastName || undefined,
-            minAge: filters.minAge,
-            maxAge: filters.maxAge,
-          })
-        : await UserService.getAllUsers();
-
-      setUsers(usersResponse.data);
-
-      try {
-        const rolesResponse = await RoleService.findAll();
-        setRoles(rolesResponse.data);
-      } catch (rolesError: any) {
-        if (
-          rolesError.response?.status === 404 ||
-          rolesError.message?.includes("404")
-        ) {
-          const uniqueRolesMap = new Map<string, Role>();
-          usersResponse.data.forEach((user: User) => {
-            user.roles.forEach((role: Role) => {
-              if (!uniqueRolesMap.has(role.id)) {
-                uniqueRolesMap.set(role.id, role);
-              }
-            });
-          });
-          setRoles(Array.from(uniqueRolesMap.values()));
-        } else {
-          throw rolesError;
-        }
-      }
+      setUsers(usersResponse.data.content);
+      setHasNextPage(!usersResponse.data.last);
     } catch (err: any) {
-      setError(err.message || "Failed to load data");
+      setError(err.message || "Failed to load users");
     } finally {
       setLoading(false);
     }
@@ -197,7 +194,7 @@ const AdminPage = () => {
 
       await UserService.updateUser(updatedUser);
       setSuccess("Roles updated successfully");
-      await loadData();
+      await loadUsers();
       handleCloseRoleDialog();
     } catch (err: any) {
       setError(err.message || "Failed to update roles");
@@ -218,7 +215,11 @@ const AdminPage = () => {
     try {
       await UserService.deleteUser(userId);
       setSuccess("User deleted successfully");
-      await loadData();
+      await loadUsers();
+
+      if (users.length === 1 && filters.page > 0) {
+        setFilters((prev) => ({ ...prev, page: prev.page - 1 }));
+      }
     } catch (err: any) {
       setError(err.message || "Failed to delete user");
     } finally {
@@ -266,25 +267,20 @@ const AdminPage = () => {
             <TextField
               label="First name"
               value={filters.firstName}
-              onChange={(e) =>
-                setFilters({ ...filters, firstName: e.target.value })
-              }
+              onChange={(e) => updateFilter({ firstName: e.target.value })}
             />
 
             <TextField
               label="Last name"
               value={filters.lastName}
-              onChange={(e) =>
-                setFilters({ ...filters, lastName: e.target.value })
-              }
+              onChange={(e) => updateFilter({ lastName: e.target.value })}
             />
 
             <TextField
               label="Min age"
               type="number"
               onChange={(e) =>
-                setFilters({
-                  ...filters,
+                updateFilter({
                   minAge: e.target.value ? Number(e.target.value) : undefined,
                 })
               }
@@ -294,8 +290,7 @@ const AdminPage = () => {
               label="Max age"
               type="number"
               onChange={(e) =>
-                setFilters({
-                  ...filters,
+                updateFilter({
                   maxAge: e.target.value ? Number(e.target.value) : undefined,
                 })
               }
@@ -345,20 +340,30 @@ const AdminPage = () => {
                         </Box>
                       </TableCell>
                       <TableCell align="right">
-                        <IconButton
-                          color="primary"
-                          onClick={() => handleOpenRoleDialog(user)}
-                          title="Edit Roles"
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            gap: 1,
+                          }}
                         >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          color="error"
-                          onClick={() => handleDeleteUser(user.id)}
-                          title="Delete User"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                          <IconButton
+                            color="primary"
+                            onClick={() => handleOpenRoleDialog(user)}
+                            title="Edit Roles"
+                            size="small"
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            color="error"
+                            onClick={() => handleDeleteUser(user.id)}
+                            title="Delete User"
+                            size="small"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -459,17 +464,62 @@ const AdminPage = () => {
             ))}
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseRoleDialog}>Cancel</Button>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={handleCloseRoleDialog} color="inherit">
+            Cancel
+          </Button>
+
           <Button
             onClick={handleSaveRoles}
             variant="contained"
             disabled={loading}
           >
-            Save
+            Save changes
           </Button>
         </DialogActions>
       </Dialog>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 2,
+          mt: 3,
+        }}
+      >
+        <Button
+          variant="outlined"
+          disabled={filters.page === 0}
+          onClick={() =>
+            setFilters((prev) => ({
+              ...prev,
+              page: prev.page - 1,
+            }))
+          }
+        >
+          Previous
+        </Button>
+
+        <Chip
+          label={`Page ${filters.page + 1}`}
+          color="primary"
+          variant="outlined"
+          sx={{ fontWeight: 500 }}
+        />
+
+        <Button
+          variant="contained"
+          disabled={!hasNextPage}
+          onClick={() =>
+            setFilters((prev) => ({
+              ...prev,
+              page: prev.page + 1,
+            }))
+          }
+        >
+          Next
+        </Button>
+      </Box>
     </Box>
   );
 };

@@ -1,5 +1,6 @@
 import api from "../config/Api";
 import { User, UserRegister } from "../types/models/User.model";
+import { Page } from "../types/models/Page";
 
 const UserService = {
   getUser: async (userID: string): Promise<User> => {
@@ -11,11 +12,11 @@ const UserService = {
     return api.put(`/user/editUser/${user.id}`, user);
   },
 
- addUser: (registrationData: UserRegister) => {
-  return api.post("/user/register", registrationData).then((res) => {
-    return res.data;
-  });
-},
+  addUser: (registrationData: UserRegister) => {
+    return api.post("/user/register", registrationData).then((res) => {
+      return res.data;
+    });
+  },
 
   getAllUsers: () => {
     return api.get<User[]>(`/user`);
@@ -26,14 +27,14 @@ const UserService = {
   },
 
   getFilteredUsers: (params: {
-    minAge?: number;
-    maxAge?: number;
     firstName?: string;
     lastName?: string;
-    page?: number;
-    size?: number;
+    minAge?: number;
+    maxAge?: number;
+    page: number;
+    size: number;
   }) => {
-    return api.get<User[]>(`/user/admin/search`, {
+    return api.get<Page<User>>(`/user/admin/search`, {
       params,
     });
   },
