@@ -5,6 +5,9 @@ import Button from "@mui/material/Button";
 import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import PersonIcon from "@mui/icons-material/Person";
+import Box from "@mui/material/Box";
 import { useEffect, useState, useContext } from "react";
 import { User } from "../../../types/models/User.model";
 import UserService from "../../../Services/UserService";
@@ -29,10 +32,6 @@ const UserTable = () => {
         .catch(() => setUsers([]));
     }
   }, []);
-
-  const handleAdd = () => {
-    navigate("/user/edit");
-  };
 
   const handleEdit = (id: string) => {
     navigate(`/user/edit/${id}`);
@@ -59,18 +58,50 @@ const UserTable = () => {
     }
   };
 
+  const handleProfileClick = () => {
+    if (activeUserContext.user?.id) {
+      navigate(`/user/edit/${activeUserContext.user.id}`);
+    }
+  };
+
   return (
-    <>
-      {activeUserContext.checkRole("ADMIN") && (
-        <Button
-          size="small"
-          color="success"
-          variant="contained"
-          onClick={handleAdd}
-        >
-          Add
-        </Button>
-      )}
+    <Box>
+      {/* Website-style header */}
+      <Box
+        sx={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          bgcolor: 'background.paper',
+          borderBottom: 1,
+          borderColor: 'divider',
+          py: 2,
+          px: 2,
+          mb: 3
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h5" component="h1" fontWeight="bold">
+            User Management
+          </Typography>
+          <IconButton
+            color="primary"
+            onClick={handleProfileClick}
+            aria-label="Go to my profile"
+            size="large"
+            sx={{
+              bgcolor: 'primary.main',
+              color: 'white',
+              '&:hover': {
+                bgcolor: 'primary.dark',
+              }
+            }}
+          >
+            <PersonIcon />
+          </IconButton>
+        </Box>
+      </Box>
+
       {users.map((user) => (
         <Card key={user.id} sx={{ minWidth: 275, mb: 2 }}>
           <CardContent>
@@ -132,7 +163,7 @@ const UserTable = () => {
           </CardActions>
         </Card>
       ))}
-    </>
+    </Box>
   );
 };
 
