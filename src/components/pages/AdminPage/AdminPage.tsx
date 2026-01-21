@@ -35,8 +35,6 @@ import { TextField } from "@mui/material";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 
-
-
 const AdminPage = () => {
   const { checkRole } = useContext(ActiveUserContext);
   const [users, setUsers] = useState<User[]>([]);
@@ -74,7 +72,9 @@ const AdminPage = () => {
   const userEditValidationSchema = Yup.object().shape({
     firstName: Yup.string().required("First name is required"),
     lastName: Yup.string().required("Last name is required"),
-    email: Yup.string().email("Invalid email address").required("Email is required"),
+    email: Yup.string()
+      .email("Invalid email address")
+      .required("Email is required"),
     address: Yup.string(),
     birthDate: Yup.string(),
   });
@@ -148,7 +148,6 @@ const AdminPage = () => {
       setLoading(false);
     }
   };
-
 
   const handleOpenRoleDialog = (user: User) => {
     setSelectedUser(user);
@@ -313,7 +312,6 @@ const AdminPage = () => {
       )}
 
       <Paper sx={{ width: "100%" }}>
-
         <Box sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
             User Management
@@ -322,16 +320,18 @@ const AdminPage = () => {
             <TextField
               label="First name"
               value={filters.firstName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilter({ firstName: e.target.value })}
-              onChange={(e) => updateFilter({ firstName: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                updateFilter({ firstName: e.target.value })
+              }
               inputProps={{ "data-cy": "filter-first-name" }}
             />
 
             <TextField
               label="Last name"
               value={filters.lastName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilter({ lastName: e.target.value })}
-              onChange={(e) => updateFilter({ lastName: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                updateFilter({ lastName: e.target.value })
+              }
               inputProps={{ "data-cy": "filter-last-name" }}
             />
 
@@ -433,7 +433,6 @@ const AdminPage = () => {
             </TableContainer>
           )}
         </Box>
-
       </Paper>
 
       {/* Role Assignment Dialog */}
@@ -510,7 +509,14 @@ const AdminPage = () => {
           >
             {(props: any) => (
               <Form>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2,
+                    mt: 1,
+                  }}
+                >
                   <Typography variant="h6">User Details</Typography>
                   <Box sx={{ display: "flex", gap: 2 }}>
                     <TextField
@@ -520,8 +526,12 @@ const AdminPage = () => {
                       value={props.values.firstName}
                       onChange={props.handleChange}
                       onBlur={props.handleBlur}
-                      error={props.touched.firstName && !!props.errors.firstName}
-                      helperText={props.touched.firstName && props.errors.firstName}
+                      error={
+                        props.touched.firstName && !!props.errors.firstName
+                      }
+                      helperText={
+                        props.touched.firstName && props.errors.firstName
+                      }
                     />
                     <TextField
                       fullWidth
@@ -531,7 +541,9 @@ const AdminPage = () => {
                       onChange={props.handleChange}
                       onBlur={props.handleBlur}
                       error={props.touched.lastName && !!props.errors.lastName}
-                      helperText={props.touched.lastName && props.errors.lastName}
+                      helperText={
+                        props.touched.lastName && props.errors.lastName
+                      }
                     />
                   </Box>
                   <TextField
@@ -564,13 +576,17 @@ const AdminPage = () => {
                     onChange={props.handleChange}
                     onBlur={props.handleBlur}
                     error={props.touched.birthDate && !!props.errors.birthDate}
-                    helperText={props.touched.birthDate && props.errors.birthDate}
+                    helperText={
+                      props.touched.birthDate && props.errors.birthDate
+                    }
                     InputLabelProps={{
                       shrink: true,
                     }}
                   />
 
-                  <Typography variant="h6" sx={{ mt: 2 }}>Roles</Typography>
+                  <Typography variant="h6" sx={{ mt: 2 }}>
+                    Roles
+                  </Typography>
                   <Box sx={{ display: "flex", flexDirection: "column", mt: 1 }}>
                     {roles && roles.length > 0 ? (
                       roles.map((role, index) => (
@@ -584,10 +600,16 @@ const AdminPage = () => {
                           }
                           label={
                             <Box>
-                              <Typography variant="body1">{role.name}</Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {role.authorities?.map((a) => a.name).join(", ") ||
-                                  "No authorities"}
+                              <Typography variant="body1">
+                                {role.name}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {role.authorities
+                                  ?.map((a) => a.name)
+                                  .join(", ") || "No authorities"}
                               </Typography>
                             </Box>
                           }
@@ -610,7 +632,7 @@ const AdminPage = () => {
           </Button>
           <Button
             onClick={() => {
-              const form = document.querySelector('form');
+              const form = document.querySelector("form");
               if (form) form.requestSubmit();
             }}
             variant="contained"
