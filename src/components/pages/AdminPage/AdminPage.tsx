@@ -175,7 +175,7 @@ const AdminPage = () => {
     setSelectedRoles((prev) =>
       prev.includes(roleId)
         ? prev.filter((id) => id !== roleId)
-        : [...prev, roleId]
+        : [...prev, roleId],
     );
   };
 
@@ -188,7 +188,7 @@ const AdminPage = () => {
 
     try {
       const updatedRoles = roles.filter((role) =>
-        selectedRoles.includes(role.id)
+        selectedRoles.includes(role.id),
       );
       const updatedUser: User = {
         ...selectedUser,
@@ -399,7 +399,7 @@ const AdminPage = () => {
                         <Box
                           sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}
                         >
-                          {role.authorities.map((authority) => (
+                          {role.authorities?.map((authority) => (
                             <Chip
                               key={authority.id}
                               label={authority.name}
@@ -408,7 +408,8 @@ const AdminPage = () => {
                               variant="outlined"
                             />
                           ))}
-                          {role.authorities.length === 0 && (
+                          {(!role.authorities ||
+                            role.authorities.length === 0) && (
                             <Typography variant="body2" color="text.secondary">
                               No authorities
                             </Typography>
@@ -449,7 +450,7 @@ const AdminPage = () => {
                   <Box>
                     <Typography variant="body1">{role.name}</Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {role.authorities.map((a) => a.name).join(", ") ||
+                      {role.authorities?.map((a) => a.name).join(", ") ||
                         "No authorities"}
                     </Typography>
                   </Box>
