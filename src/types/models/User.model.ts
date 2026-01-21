@@ -21,3 +21,4 @@ export type User = {
   password?: string;
   profile: UserRegister["profile"];
 };
+

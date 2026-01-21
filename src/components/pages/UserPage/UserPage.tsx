@@ -42,6 +42,7 @@ const UserPage = () => {
         lastName: values.lastName,
         email: values.email,
         roles: values.roles,
+        password : values.password!,
         profile: {
           address: values.profile.address,
           birthDate: values.profile.birthDate,
