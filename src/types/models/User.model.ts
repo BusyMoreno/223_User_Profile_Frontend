@@ -1,9 +1,15 @@
 import { Role } from "./Role.model";
 
-export interface UserProfile {
-  address: string;
-  birthDate: string;
-  profileImageUrl: string;
+export interface UserRegister {
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string; 
+  profile: {
+    address: string;
+    birthDate: string;
+    profileImageUrl: string;
+  };
 }
 
 export type User = {
@@ -13,5 +19,5 @@ export type User = {
   lastName: string;
   roles: Role[];
   password?: string;
-  profile: UserProfile;
+  profile: UserRegister["profile"];
 };
