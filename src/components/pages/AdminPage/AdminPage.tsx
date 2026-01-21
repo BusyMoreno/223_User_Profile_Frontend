@@ -2,8 +2,6 @@ import React, { useContext, useEffect, useState } from "react";
 import {
   Box,
   Typography,
-  Tabs,
-  Tab,
   Paper,
   Table,
   TableBody,
@@ -33,32 +31,14 @@ import UserService from "../../../Services/UserService";
 import RoleService from "../../../Services/RoleService";
 import { User } from "../../../types/models/User.model";
 import { Role } from "../../../types/models/Role.model";
-import TextField from "@mui/material/TextField";
+import { TextField } from "@mui/material";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
 
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`admin-tabpanel-${index}`}
-      aria-labelledby={`admin-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
 
 const AdminPage = () => {
   const { checkRole } = useContext(ActiveUserContext);
-  const [tabValue, setTabValue] = useState(0);
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(false);
@@ -67,8 +47,17 @@ const AdminPage = () => {
 
   // Dialog states
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  const [userEditDialogOpen, setUserEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [editUserData, setEditUserData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    address: "",
+    birthDate: "",
+  });
+  const [editUserRoles, setEditUserRoles] = useState<string[]>([]);
 
   // Pagination
   const [hasNextPage, setHasNextPage] = useState(true);
@@ -80,6 +69,14 @@ const AdminPage = () => {
     maxAge: undefined as number | undefined,
     page: 0,
     size: 10,
+  });
+
+  const userEditValidationSchema = Yup.object().shape({
+    firstName: Yup.string().required("First name is required"),
+    lastName: Yup.string().required("Last name is required"),
+    email: Yup.string().email("Invalid email address").required("Email is required"),
+    address: Yup.string(),
+    birthDate: Yup.string(),
   });
 
   const updateFilter = (changes: Partial<typeof filters>) => {
@@ -152,9 +149,6 @@ const AdminPage = () => {
     }
   };
 
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
 
   const handleOpenRoleDialog = (user: User) => {
     setSelectedUser(user);
@@ -170,6 +164,14 @@ const AdminPage = () => {
 
   const handleRoleToggle = (roleId: string) => {
     setSelectedRoles((prev) =>
+      prev.includes(roleId)
+        ? prev.filter((id) => id !== roleId)
+        : [...prev, roleId],
+    );
+  };
+
+  const handleEditUserRoleToggle = (roleId: string) => {
+    setEditUserRoles((prev) =>
       prev.includes(roleId)
         ? prev.filter((id) => id !== roleId)
         : [...prev, roleId],
@@ -198,6 +200,67 @@ const AdminPage = () => {
       handleCloseRoleDialog();
     } catch (err: any) {
       setError(err.message || "Failed to update roles");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenUserEditDialog = (user: User) => {
+    setSelectedUser(user);
+    setEditUserData({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      address: user.profile?.address || "",
+      birthDate: user.profile?.birthDate || "",
+    });
+    setEditUserRoles(user.roles.map((role) => role.id));
+    setUserEditDialogOpen(true);
+  };
+
+  const handleCloseUserEditDialog = () => {
+    setUserEditDialogOpen(false);
+    setSelectedUser(null);
+    setEditUserRoles([]);
+    setEditUserData({
+      firstName: "",
+      lastName: "",
+      email: "",
+      address: "",
+      birthDate: "",
+    });
+  };
+
+  const handleSaveUserEdit = async (values: typeof editUserData) => {
+    if (!selectedUser) return;
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const updatedRoles = roles.filter((role) =>
+        editUserRoles.includes(role.id),
+      );
+      const updatedUser: User = {
+        ...selectedUser,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        roles: updatedRoles,
+        profile: {
+          ...selectedUser.profile,
+          address: values.address,
+          birthDate: values.birthDate,
+        },
+      };
+
+      await UserService.updateUser(updatedUser);
+      setSuccess("User updated successfully");
+      await loadUsers();
+      handleCloseUserEditDialog();
+    } catch (err: any) {
+      setError(err.message || "Failed to update user");
     } finally {
       setLoading(false);
     }
@@ -250,16 +313,8 @@ const AdminPage = () => {
       )}
 
       <Paper sx={{ width: "100%" }}>
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          aria-label="admin tabs"
-        >
-          <Tab label="User Management" />
-          <Tab label="Role Management" />
-        </Tabs>
 
-        <TabPanel value={tabValue} index={0}>
+        <Box sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
             User Management
           </Typography>
@@ -267,19 +322,19 @@ const AdminPage = () => {
             <TextField
               label="First name"
               value={filters.firstName}
-              onChange={(e) => updateFilter({ firstName: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilter({ firstName: e.target.value })}
             />
 
             <TextField
               label="Last name"
               value={filters.lastName}
-              onChange={(e) => updateFilter({ lastName: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilter({ lastName: e.target.value })}
             />
 
             <TextField
               label="Min age"
               type="number"
-              onChange={(e) =>
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 updateFilter({
                   minAge: e.target.value ? Number(e.target.value) : undefined,
                 })
@@ -289,7 +344,7 @@ const AdminPage = () => {
             <TextField
               label="Max age"
               type="number"
-              onChange={(e) =>
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 updateFilter({
                   maxAge: e.target.value ? Number(e.target.value) : undefined,
                 })
@@ -349,8 +404,8 @@ const AdminPage = () => {
                         >
                           <IconButton
                             color="primary"
-                            onClick={() => handleOpenRoleDialog(user)}
-                            title="Edit Roles"
+                            onClick={() => handleOpenUserEditDialog(user)}
+                            title="Edit User"
                             size="small"
                           >
                             <EditIcon />
@@ -371,63 +426,8 @@ const AdminPage = () => {
               </Table>
             </TableContainer>
           )}
-        </TabPanel>
+        </Box>
 
-        <TabPanel value={tabValue} index={1}>
-          <Typography variant="h6" gutterBottom>
-            Role Management
-          </Typography>
-          {loading ? (
-            <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
-              <CircularProgress />
-            </Box>
-          ) : (
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Role Name</TableCell>
-                    <TableCell>Authorities</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {roles.map((role) => (
-                    <TableRow key={role.id}>
-                      <TableCell>
-                        <Chip
-                          label={role.name}
-                          color="primary"
-                          variant="filled"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Box
-                          sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}
-                        >
-                          {role.authorities?.map((authority) => (
-                            <Chip
-                              key={authority.id}
-                              label={authority.name}
-                              size="small"
-                              color="secondary"
-                              variant="outlined"
-                            />
-                          ))}
-                          {(!role.authorities ||
-                            role.authorities.length === 0) && (
-                            <Typography variant="body2" color="text.secondary">
-                              No authorities
-                            </Typography>
-                          )}
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </TabPanel>
       </Paper>
 
       {/* Role Assignment Dialog */}
@@ -442,26 +442,32 @@ const AdminPage = () => {
         </DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", mt: 1 }}>
-            {roles.map((role) => (
-              <FormControlLabel
-                key={role.id}
-                control={
-                  <Checkbox
-                    checked={selectedRoles.includes(role.id)}
-                    onChange={() => handleRoleToggle(role.id)}
-                  />
-                }
-                label={
-                  <Box>
-                    <Typography variant="body1">{role.name}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {role.authorities?.map((a) => a.name).join(", ") ||
-                        "No authorities"}
-                    </Typography>
-                  </Box>
-                }
-              />
-            ))}
+            {roles && roles.length > 0 ? (
+              roles.map((role, index) => (
+                <FormControlLabel
+                  key={`assign-role-${role.id || index}`}
+                  control={
+                    <Checkbox
+                      checked={selectedRoles.includes(role.id)}
+                      onChange={() => handleRoleToggle(role.id)}
+                    />
+                  }
+                  label={
+                    <Box>
+                      <Typography variant="body1">{role.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {role.authorities?.map((a) => a.name).join(", ") ||
+                          "No authorities"}
+                      </Typography>
+                    </Box>
+                  }
+                />
+              ))
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                Loading roles...
+              </Typography>
+            )}
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -471,6 +477,136 @@ const AdminPage = () => {
 
           <Button
             onClick={handleSaveRoles}
+            variant="contained"
+            disabled={loading}
+          >
+            Save changes
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* User Edit Dialog */}
+      <Dialog
+        open={userEditDialogOpen}
+        onClose={handleCloseUserEditDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          Edit User: {selectedUser?.firstName} {selectedUser?.lastName}
+        </DialogTitle>
+        <DialogContent>
+          <Formik
+            initialValues={editUserData}
+            validationSchema={userEditValidationSchema}
+            onSubmit={handleSaveUserEdit}
+            enableReinitialize
+          >
+            {(props: any) => (
+              <Form>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+                  <Typography variant="h6">User Details</Typography>
+                  <Box sx={{ display: "flex", gap: 2 }}>
+                    <TextField
+                      fullWidth
+                      label="First Name"
+                      name="firstName"
+                      value={props.values.firstName}
+                      onChange={props.handleChange}
+                      onBlur={props.handleBlur}
+                      error={props.touched.firstName && !!props.errors.firstName}
+                      helperText={props.touched.firstName && props.errors.firstName}
+                    />
+                    <TextField
+                      fullWidth
+                      label="Last Name"
+                      name="lastName"
+                      value={props.values.lastName}
+                      onChange={props.handleChange}
+                      onBlur={props.handleBlur}
+                      error={props.touched.lastName && !!props.errors.lastName}
+                      helperText={props.touched.lastName && props.errors.lastName}
+                    />
+                  </Box>
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    name="email"
+                    type="email"
+                    value={props.values.email}
+                    onChange={props.handleChange}
+                    onBlur={props.handleBlur}
+                    error={props.touched.email && !!props.errors.email}
+                    helperText={props.touched.email && props.errors.email}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Address"
+                    name="address"
+                    value={props.values.address}
+                    onChange={props.handleChange}
+                    onBlur={props.handleBlur}
+                    error={props.touched.address && !!props.errors.address}
+                    helperText={props.touched.address && props.errors.address}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Birth Date"
+                    name="birthDate"
+                    type="date"
+                    value={props.values.birthDate}
+                    onChange={props.handleChange}
+                    onBlur={props.handleBlur}
+                    error={props.touched.birthDate && !!props.errors.birthDate}
+                    helperText={props.touched.birthDate && props.errors.birthDate}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+
+                  <Typography variant="h6" sx={{ mt: 2 }}>Roles</Typography>
+                  <Box sx={{ display: "flex", flexDirection: "column", mt: 1 }}>
+                    {roles && roles.length > 0 ? (
+                      roles.map((role, index) => (
+                        <FormControlLabel
+                          key={`edit-user-role-${role.id || index}`}
+                          control={
+                            <Checkbox
+                              checked={editUserRoles.includes(role.id)}
+                              onChange={() => handleEditUserRoleToggle(role.id)}
+                            />
+                          }
+                          label={
+                            <Box>
+                              <Typography variant="body1">{role.name}</Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {role.authorities?.map((a) => a.name).join(", ") ||
+                                  "No authorities"}
+                              </Typography>
+                            </Box>
+                          }
+                        />
+                      ))
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        Loading roles...
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              </Form>
+            )}
+          </Formik>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={handleCloseUserEditDialog} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              const form = document.querySelector('form');
+              if (form) form.requestSubmit();
+            }}
             variant="contained"
             disabled={loading}
           >
