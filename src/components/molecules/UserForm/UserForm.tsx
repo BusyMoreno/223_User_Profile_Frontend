@@ -48,11 +48,10 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
       email: string().required().email(),
       profile: object({
         address: string().required().min(2).max(100),
-        birthDate: string().test(
-          "is-13",
-          "You must be at least 13 years old",
-          (value) => {
-            if (!value) return false;
+        birthDate: string()
+          .required("Birth date is required")
+          .test("is-13", "You must be at least 13 years old", (value) => {
+            if (!value) return true;
 
             const birth = new Date(value);
             const today = new Date();
@@ -68,8 +67,7 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
             }
 
             return age >= 13;
-          },
-        ),
+          }),
         profileImageUrl: string().required().min(2).max(100),
       }),
       password: string().when("id", {
