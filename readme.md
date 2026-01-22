@@ -54,12 +54,12 @@ You can locate the test file in the frontend repository and execute it. These te
 
 ## Frontend-URL
 
-| Route        | Zugriffsebene | Beschreibung        | Besonderheiten                                                     |
-|--------------|---------------|---------------------|--------------------------------------------------------------------|
-| `/`          | Öffentlich    | Home / Landing Page | Startpunkt der Anwendung.                                          |
-| `/user/login`| Öffentlich    | Login-Seite         | Authentifizierung für User und Admins. Wenn man Sign-Up Link klickt|
-|              |               |                     | , kann man neue User erstelln                                      |
-| `/user`      | User          | Profil-Ansicht      | Ein regulärer User sieht hier nur seine eigenen Daten.             |
-| `/user`      | Admin         | Benutzerliste       | Ein Admin sieht hier alle registrierten Benutzer.                  |
-| `/user/admin`| Admin         | Dashboard           | Zentrales Management mit Filtern, Pagination und Sortierung.       |
+| Route         | Access Level | Description          | Special Notes                                                                 |
+|---------------|--------------|----------------------|--------------------------------------------------------------------------------|
+| `/`           | Public       | Home / Landing Page  | Entry point of the application.                                               |
+| `/user/login` | Public       | Login Page           | Authentication for users and admins. After registration, the user has the USER role by default. |
+| `/user/login` | Public       | Registration Page    | New users can be created by clicking the sign-up link.                        |
+| `/user`       | User         | Profile View         | A regular user can only see their own data.                                   |
+| `/user`       | Admin        | User List            | An admin can see all registered users.                                        |
+| `/user/admin` | Admin        | Dashboard            | Central management with filtering, pagination, and sorting.                  |
 
