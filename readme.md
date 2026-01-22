@@ -49,3 +49,14 @@ To use Postman, ensure that **Docker is running** and the **backend application 
 
 ### Cypress
 You can locate the test file in the frontend repository and execute it. These tests fully validate **Use Cases 2 and 5**. While other use cases are included in the testing suite, Use Cases 2 and 5 are the most comprehensively tested.
+
+---
+
+## Frontend-URL
+
+Route,Zugriffsebene,Beschreibung,Besonderheiten
+/,Öffentlich,Home / Landing Page,Startpunkt der Anwendung.
+/user/login,Öffentlich,Login-Seite,Authentifizierung für User und Admins.
+/User,User,Profil-Ansicht,Ein regulärer User sieht hier nur seine eigenen Daten.
+/User,Admin,Benutzerliste,Ein Admin sieht hier alle registrierten Benutzer.
+/User/admin,Admin,Dashboard,"Zentrales Management mit Filtern, Pagination und Sortierung."
