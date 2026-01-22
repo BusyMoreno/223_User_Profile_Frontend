@@ -10,7 +10,7 @@ import {
   Avatar,
   Divider,
   Grid,
-  Paper
+  Paper,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { object, string } from "yup";
@@ -48,7 +48,26 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
       email: string().required().email(),
       profile: object({
         address: string().required().min(2).max(100),
-        birthDate: string().required(),
+        birthDate: string()
+          .required("Birth date is required")
+          .test("is-13", "You must be at least 13 years old", (value) => {
+            if (!value) return true;
+
+            const birth = new Date(value);
+            const today = new Date();
+
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+
+            if (
+              monthDiff < 0 ||
+              (monthDiff === 0 && today.getDate() < birth.getDate())
+            ) {
+              age--;
+            }
+
+            return age >= 13;
+          }),
         profileImageUrl: string().required().min(2).max(100),
       }),
       password: string().when("id", {
@@ -67,7 +86,7 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
   });
 
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', p: 2 }}>
+    <Box sx={{ maxWidth: 800, mx: "auto", p: 2 }}>
       <form onSubmit={formik.handleSubmit}>
         {/* Profile Header */}
         <Paper
@@ -75,8 +94,8 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
           sx={{
             p: 3,
             mb: 3,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white'
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
           }}
         >
           <Box display="flex" alignItems="center" gap={3}>
@@ -85,18 +104,19 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
               sx={{
                 width: 80,
                 height: 80,
-                border: '4px solid white',
-                boxShadow: 2
+                border: "4px solid white",
+                boxShadow: 2,
               }}
             >
               <PersonIcon sx={{ fontSize: 40 }} />
             </Avatar>
             <Box>
               <Typography variant="h4" fontWeight="bold">
-                {formik.values.firstName || 'First Name'} {formik.values.lastName || 'Last Name'}
+                {formik.values.firstName || "First Name"}{" "}
+                {formik.values.lastName || "Last Name"}
               </Typography>
               <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
-                {formik.values.email || 'email@example.com'}
+                {formik.values.email || "email@example.com"}
               </Typography>
             </Box>
           </Box>
@@ -105,7 +125,11 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
         {/* Personal Information Card */}
         <Card sx={{ mb: 3 }}>
           <CardContent>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ display: "flex", alignItems: "center", gap: 1 }}
+            >
               <PersonIcon color="primary" />
               Personal Information
             </Typography>
@@ -121,8 +145,12 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
                   variant="outlined"
                   onBlur={formik.handleBlur}
                   onChange={formik.handleChange}
-                  error={Boolean(formik.touched.firstName && formik.errors.firstName)}
-                  helperText={formik.touched.firstName && formik.errors.firstName}
+                  error={Boolean(
+                    formik.touched.firstName && formik.errors.firstName,
+                  )}
+                  helperText={
+                    formik.touched.firstName && formik.errors.firstName
+                  }
                   value={formik.values.firstName}
                 />
               </Grid>
@@ -136,7 +164,9 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
                   variant="outlined"
                   onBlur={formik.handleBlur}
                   onChange={formik.handleChange}
-                  error={Boolean(formik.touched.lastName && formik.errors.lastName)}
+                  error={Boolean(
+                    formik.touched.lastName && formik.errors.lastName,
+                  )}
                   helperText={formik.touched.lastName && formik.errors.lastName}
                   value={formik.values.lastName}
                 />
@@ -156,7 +186,9 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
                   helperText={formik.touched.email && formik.errors.email}
                   value={formik.values.email}
                   InputProps={{
-                    startAdornment: <EmailIcon sx={{ mr: 1, color: 'action.active' }} />
+                    startAdornment: (
+                      <EmailIcon sx={{ mr: 1, color: "action.active" }} />
+                    ),
                   }}
                 />
               </Grid>
@@ -167,7 +199,11 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
         {/* Profile Details Card */}
         <Card sx={{ mb: 3 }}>
           <CardContent>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ display: "flex", alignItems: "center", gap: 1 }}
+            >
               <HomeIcon color="primary" />
               Profile Details
             </Typography>
@@ -185,11 +221,17 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
                   onChange={formik.handleChange}
                   value={formik.values.profile.address}
                   error={Boolean(
-                    formik.touched.profile?.address && formik.errors.profile?.address
+                    formik.touched.profile?.address &&
+                    formik.errors.profile?.address,
                   )}
-                  helperText={formik.touched.profile?.address && formik.errors.profile?.address}
+                  helperText={
+                    formik.touched.profile?.address &&
+                    formik.errors.profile?.address
+                  }
                   InputProps={{
-                    startAdornment: <HomeIcon sx={{ mr: 1, color: 'action.active' }} />
+                    startAdornment: (
+                      <HomeIcon sx={{ mr: 1, color: "action.active" }} />
+                    ),
                   }}
                 />
               </Grid>
@@ -208,11 +250,16 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
                   value={formik.values.profile.birthDate}
                   error={Boolean(
                     formik.touched.profile?.birthDate &&
-                      formik.errors.profile?.birthDate
+                    formik.errors.profile?.birthDate,
                   )}
-                  helperText={formik.touched.profile?.birthDate && formik.errors.profile?.birthDate}
+                  helperText={
+                    formik.touched.profile?.birthDate &&
+                    formik.errors.profile?.birthDate
+                  }
                   InputProps={{
-                    startAdornment: <CakeIcon sx={{ mr: 1, color: 'action.active' }} />
+                    startAdornment: (
+                      <CakeIcon sx={{ mr: 1, color: "action.active" }} />
+                    ),
                   }}
                 />
               </Grid>
@@ -229,11 +276,16 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
                   value={formik.values.profile.profileImageUrl}
                   error={Boolean(
                     formik.touched.profile?.profileImageUrl &&
-                      formik.errors.profile?.profileImageUrl
+                    formik.errors.profile?.profileImageUrl,
                   )}
-                  helperText={formik.touched.profile?.profileImageUrl && formik.errors.profile?.profileImageUrl}
+                  helperText={
+                    formik.touched.profile?.profileImageUrl &&
+                    formik.errors.profile?.profileImageUrl
+                  }
                   InputProps={{
-                    startAdornment: <ImageIcon sx={{ mr: 1, color: 'action.active' }} />
+                    startAdornment: (
+                      <ImageIcon sx={{ mr: 1, color: "action.active" }} />
+                    ),
                   }}
                 />
               </Grid>
@@ -259,7 +311,9 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
                 variant="outlined"
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
-                error={Boolean(formik.touched.password && formik.errors.password)}
+                error={Boolean(
+                  formik.touched.password && formik.errors.password,
+                )}
                 helperText={formik.touched.password && formik.errors.password}
                 value={formik.values.password}
               />
@@ -268,7 +322,12 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
         )}
 
         {/* Action Buttons */}
-        <Box display="flex" justifyContent="center" gap={2} sx={{ mt: 4, mb: 4 }}>
+        <Box
+          display="flex"
+          justifyContent="center"
+          gap={2}
+          sx={{ mt: 4, mb: 4 }}
+        >
           <Button
             variant="contained"
             color="primary"
