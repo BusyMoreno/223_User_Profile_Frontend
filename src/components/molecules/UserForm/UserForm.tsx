@@ -68,7 +68,12 @@ const UserForm = ({ user, submitActionHandler }: UserProps) => {
 
             return age >= 13;
           }),
-        profileImageUrl: string().required().min(2).max(100),
+        profileImageUrl: string()
+          .notRequired()
+          .matches(/^https?:\/\/.*$/, {
+            message: "Invalid URL",
+            excludeEmptyString: true,
+          }),
       }),
       password: string().when("id", {
         is: (id: string) => !id,
