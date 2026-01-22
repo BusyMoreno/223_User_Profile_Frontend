@@ -20,6 +20,7 @@ import {
   FormControlLabel,
   Alert,
   CircularProgress,
+  Avatar,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -32,10 +33,8 @@ import RoleService from "../../../Services/RoleService";
 import { User } from "../../../types/models/User.model";
 import { Role } from "../../../types/models/Role.model";
 import { TextField } from "@mui/material";
-import { Formik, Form } from "formik";
+import { Formik, Form, FormikHelpers } from "formik";
 import * as Yup from "yup";
-
-
 
 const AdminPage = () => {
   const { checkRole } = useContext(ActiveUserContext);
@@ -56,6 +55,7 @@ const AdminPage = () => {
     email: "",
     address: "",
     birthDate: "",
+    profileImageUrl: "",
   });
   const [editUserRoles, setEditUserRoles] = useState<string[]>([]);
 
@@ -74,9 +74,12 @@ const AdminPage = () => {
   const userEditValidationSchema = Yup.object().shape({
     firstName: Yup.string().required("First name is required"),
     lastName: Yup.string().required("Last name is required"),
-    email: Yup.string().email("Invalid email address").required("Email is required"),
+    email: Yup.string()
+      .email("Invalid email address")
+      .required("Email is required"),
     address: Yup.string(),
     birthDate: Yup.string(),
+    profileImageUrl: Yup.string().url("Invalid URL"),
   });
 
   const updateFilter = (changes: Partial<typeof filters>) => {
@@ -149,7 +152,6 @@ const AdminPage = () => {
     }
   };
 
-
   const handleOpenRoleDialog = (user: User) => {
     setSelectedUser(user);
     setSelectedRoles(user.roles.map((role) => role.id));
@@ -213,6 +215,7 @@ const AdminPage = () => {
       email: user.email,
       address: user.profile?.address || "",
       birthDate: user.profile?.birthDate || "",
+      profileImageUrl: user.profile?.profileImageUrl || "",
     });
     setEditUserRoles(user.roles.map((role) => role.id));
     setUserEditDialogOpen(true);
@@ -228,10 +231,14 @@ const AdminPage = () => {
       email: "",
       address: "",
       birthDate: "",
+      profileImageUrl: "",
     });
   };
 
-  const handleSaveUserEdit = async (values: typeof editUserData) => {
+  const handleSaveUserEdit = async (
+    values: typeof editUserData,
+    formikHelpers: FormikHelpers<typeof editUserData>,
+  ) => {
     if (!selectedUser) return;
 
     setLoading(true);
@@ -252,6 +259,7 @@ const AdminPage = () => {
           ...selectedUser.profile,
           address: values.address,
           birthDate: values.birthDate,
+          profileImageUrl: values.profileImageUrl,
         },
       };
 
@@ -260,7 +268,11 @@ const AdminPage = () => {
       await loadUsers();
       handleCloseUserEditDialog();
     } catch (err: any) {
-      setError(err.message || "Failed to update user");
+      if (err.response?.status === 409 && err.response.data?.errors?.email) {
+        formikHelpers.setFieldError("email", err.response.data.errors.email);
+      } else {
+        setError("Failed to update user");
+      }
     } finally {
       setLoading(false);
     }
@@ -313,7 +325,6 @@ const AdminPage = () => {
       )}
 
       <Paper sx={{ width: "100%" }}>
-
         <Box sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
             User Management
@@ -322,16 +333,18 @@ const AdminPage = () => {
             <TextField
               label="First name"
               value={filters.firstName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilter({ firstName: e.target.value })}
-              onChange={(e) => updateFilter({ firstName: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                updateFilter({ firstName: e.target.value })
+              }
               inputProps={{ "data-cy": "filter-first-name" }}
             />
 
             <TextField
               label="Last name"
               value={filters.lastName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilter({ lastName: e.target.value })}
-              onChange={(e) => updateFilter({ lastName: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                updateFilter({ lastName: e.target.value })
+              }
               inputProps={{ "data-cy": "filter-last-name" }}
             />
 
@@ -376,6 +389,14 @@ const AdminPage = () => {
                 <TableBody>
                   {users.map((user) => (
                     <TableRow key={user.id}>
+                      <TableCell>
+                        {user.profile?.profileImageUrl?.startsWith("http") && (
+                          <Avatar
+                            src={user.profile.profileImageUrl}
+                            sx={{ width: 40, height: 40 }}
+                          />
+                        )}
+                      </TableCell>
                       <TableCell>
                         {user.firstName} {user.lastName}
                       </TableCell>
@@ -433,7 +454,6 @@ const AdminPage = () => {
             </TableContainer>
           )}
         </Box>
-
       </Paper>
 
       {/* Role Assignment Dialog */}
@@ -510,7 +530,14 @@ const AdminPage = () => {
           >
             {(props: any) => (
               <Form>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2,
+                    mt: 1,
+                  }}
+                >
                   <Typography variant="h6">User Details</Typography>
                   <Box sx={{ display: "flex", gap: 2 }}>
                     <TextField
@@ -520,8 +547,12 @@ const AdminPage = () => {
                       value={props.values.firstName}
                       onChange={props.handleChange}
                       onBlur={props.handleBlur}
-                      error={props.touched.firstName && !!props.errors.firstName}
-                      helperText={props.touched.firstName && props.errors.firstName}
+                      error={
+                        props.touched.firstName && !!props.errors.firstName
+                      }
+                      helperText={
+                        props.touched.firstName && props.errors.firstName
+                      }
                     />
                     <TextField
                       fullWidth
@@ -531,7 +562,9 @@ const AdminPage = () => {
                       onChange={props.handleChange}
                       onBlur={props.handleBlur}
                       error={props.touched.lastName && !!props.errors.lastName}
-                      helperText={props.touched.lastName && props.errors.lastName}
+                      helperText={
+                        props.touched.lastName && props.errors.lastName
+                      }
                     />
                   </Box>
                   <TextField
@@ -544,6 +577,22 @@ const AdminPage = () => {
                     onBlur={props.handleBlur}
                     error={props.touched.email && !!props.errors.email}
                     helperText={props.touched.email && props.errors.email}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Profile Image URL"
+                    name="profileImageUrl"
+                    value={props.values.profileImageUrl}
+                    onChange={props.handleChange}
+                    onBlur={props.handleBlur}
+                    error={
+                      props.touched.profileImageUrl &&
+                      !!props.errors.profileImageUrl
+                    }
+                    helperText={
+                      props.touched.profileImageUrl &&
+                      props.errors.profileImageUrl
+                    }
                   />
                   <TextField
                     fullWidth
@@ -564,13 +613,17 @@ const AdminPage = () => {
                     onChange={props.handleChange}
                     onBlur={props.handleBlur}
                     error={props.touched.birthDate && !!props.errors.birthDate}
-                    helperText={props.touched.birthDate && props.errors.birthDate}
+                    helperText={
+                      props.touched.birthDate && props.errors.birthDate
+                    }
                     InputLabelProps={{
                       shrink: true,
                     }}
                   />
 
-                  <Typography variant="h6" sx={{ mt: 2 }}>Roles</Typography>
+                  <Typography variant="h6" sx={{ mt: 2 }}>
+                    Roles
+                  </Typography>
                   <Box sx={{ display: "flex", flexDirection: "column", mt: 1 }}>
                     {roles && roles.length > 0 ? (
                       roles.map((role, index) => (
@@ -584,10 +637,16 @@ const AdminPage = () => {
                           }
                           label={
                             <Box>
-                              <Typography variant="body1">{role.name}</Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {role.authorities?.map((a) => a.name).join(", ") ||
-                                  "No authorities"}
+                              <Typography variant="body1">
+                                {role.name}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {role.authorities
+                                  ?.map((a) => a.name)
+                                  .join(", ") || "No authorities"}
                               </Typography>
                             </Box>
                           }
@@ -610,7 +669,7 @@ const AdminPage = () => {
           </Button>
           <Button
             onClick={() => {
-              const form = document.querySelector('form');
+              const form = document.querySelector("form");
               if (form) form.requestSubmit();
             }}
             variant="contained"
