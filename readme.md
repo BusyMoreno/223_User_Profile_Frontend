@@ -4,9 +4,36 @@
 
 To start this application, follow these steps:
 
-1.  **Launch Docker**: Ensure Docker is running on your machine.
-2.  **Start Backend**: Run the backend application.
-3.  **Start Frontend**: Navigate to the frontend directory and enter the following command:
+1. **Launch Docker**
+   - Ensure Docker is running on your machine.
+   - Start PostgreSQL container:
+     ```
+     docker run --name postgres_db -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
+     ```
+   - Verify the database is running:
+     ```
+     docker ps
+     ```
+
+3.  **Start Backend**: Run the backend application.
+4. **Start Frontend**:
+   Prerequisites
+   - Node.js (version 16 or higher)
+     - Download from: https://nodejs.org/
+     - To check if installed, open a terminal and run:
+       `node --version`
+   - Yarn (package manager)
+     - After installing Node.js, install Yarn by running:
+       `npm install -g yarn`
+     - To check if installed, run:
+       `yarn --version`
+   - Git (version control)
+     - Download from: https://git-scm.com/
+     - To check if installed, run:
+       `git --version`
+
+   Navigate to the frontend directory and enter the following command:
+
     `yarn dev`
 
 After these steps, you should be automatically forwarded to [http://localhost:3000](http://localhost:3000).
