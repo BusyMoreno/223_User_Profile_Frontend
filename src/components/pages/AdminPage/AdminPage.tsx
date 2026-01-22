@@ -77,8 +77,25 @@ const AdminPage = () => {
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
-    address: Yup.string(),
-    birthDate: Yup.string(),
+    address: Yup.string().required("Address is mandatory"),
+    birthDate: Yup.string().test("is-13", "You must be at least 13 years old", (value) => {
+      if (!value) return false;
+
+      const birth = new Date(value);
+      const today = new Date();
+
+      let age = today.getFullYear() - birth.getFullYear();
+      const monthDiff = today.getMonth() - birth.getMonth();
+
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birth.getDate())
+      ) {
+        age--;
+      }
+
+      return age >= 13;
+    }),
     profileImageUrl: Yup.string().url("Invalid URL"),
   });
 
@@ -430,6 +447,7 @@ const AdminPage = () => {
                           }}
                         >
                           <IconButton
+                          data-cy={`edit-user-${user.email}`}
                             color="primary"
                             onClick={() => handleOpenUserEditDialog(user)}
                             title="Edit User"

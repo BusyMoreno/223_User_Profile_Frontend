@@ -6,7 +6,7 @@ import AuthorityService from "../Services/AuthorityService";
 import UserService from "../Services/UserService";
 import { User } from "../types/models/User.model";
 import { Nullable } from "../types/Nullable";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 type JwtPayload = {
   sub: string;
@@ -62,7 +62,7 @@ export const ActiveUserContextProvider = ({
     setUser(updatedUser);
     localStorage.setItem(
       USER_DATA_LOCAL_STORAGE_KEY,
-      JSON.stringify(updatedUser)
+      JSON.stringify(updatedUser),
     );
   };
 
@@ -72,9 +72,14 @@ export const ActiveUserContextProvider = ({
     setUser(null);
   };
 
-  const logout = () => {
-    api.get("/logout").finally(resetAuthorization);
-    navigate("/login");
+  const logout = async () => {
+    try {
+      await api.post("/logout");
+    } catch {
+    } finally {
+      resetAuthorization();
+      navigate("/login", { replace: true });
+    }
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
