@@ -20,6 +20,7 @@ import {
   FormControlLabel,
   Alert,
   CircularProgress,
+  Avatar,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -32,7 +33,7 @@ import RoleService from "../../../Services/RoleService";
 import { User } from "../../../types/models/User.model";
 import { Role } from "../../../types/models/Role.model";
 import { TextField } from "@mui/material";
-import { Formik, Form } from "formik";
+import { Formik, Form, FormikHelpers } from "formik";
 import * as Yup from "yup";
 
 const AdminPage = () => {
@@ -54,6 +55,7 @@ const AdminPage = () => {
     email: "",
     address: "",
     birthDate: "",
+    profileImageUrl: "",
   });
   const [editUserRoles, setEditUserRoles] = useState<string[]>([]);
 
@@ -77,6 +79,7 @@ const AdminPage = () => {
       .required("Email is required"),
     address: Yup.string(),
     birthDate: Yup.string(),
+    profileImageUrl: Yup.string().url("Invalid URL"),
   });
 
   const updateFilter = (changes: Partial<typeof filters>) => {
@@ -212,6 +215,7 @@ const AdminPage = () => {
       email: user.email,
       address: user.profile?.address || "",
       birthDate: user.profile?.birthDate || "",
+      profileImageUrl: user.profile?.profileImageUrl || "",
     });
     setEditUserRoles(user.roles.map((role) => role.id));
     setUserEditDialogOpen(true);
@@ -227,10 +231,14 @@ const AdminPage = () => {
       email: "",
       address: "",
       birthDate: "",
+      profileImageUrl: "",
     });
   };
 
-  const handleSaveUserEdit = async (values: typeof editUserData) => {
+  const handleSaveUserEdit = async (
+    values: typeof editUserData,
+    formikHelpers: FormikHelpers<typeof editUserData>,
+  ) => {
     if (!selectedUser) return;
 
     setLoading(true);
@@ -251,6 +259,7 @@ const AdminPage = () => {
           ...selectedUser.profile,
           address: values.address,
           birthDate: values.birthDate,
+          profileImageUrl: values.profileImageUrl,
         },
       };
 
@@ -259,7 +268,11 @@ const AdminPage = () => {
       await loadUsers();
       handleCloseUserEditDialog();
     } catch (err: any) {
-      setError(err.message || "Failed to update user");
+      if (err.response?.status === 409 && err.response.data?.errors?.email) {
+        formikHelpers.setFieldError("email", err.response.data.errors.email);
+      } else {
+        setError("Failed to update user");
+      }
     } finally {
       setLoading(false);
     }
@@ -376,6 +389,14 @@ const AdminPage = () => {
                 <TableBody>
                   {users.map((user) => (
                     <TableRow key={user.id}>
+                      <TableCell>
+                        {user.profile?.profileImageUrl?.startsWith("http") && (
+                          <Avatar
+                            src={user.profile.profileImageUrl}
+                            sx={{ width: 40, height: 40 }}
+                          />
+                        )}
+                      </TableCell>
                       <TableCell>
                         {user.firstName} {user.lastName}
                       </TableCell>
@@ -556,6 +577,22 @@ const AdminPage = () => {
                     onBlur={props.handleBlur}
                     error={props.touched.email && !!props.errors.email}
                     helperText={props.touched.email && props.errors.email}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Profile Image URL"
+                    name="profileImageUrl"
+                    value={props.values.profileImageUrl}
+                    onChange={props.handleChange}
+                    onBlur={props.handleBlur}
+                    error={
+                      props.touched.profileImageUrl &&
+                      !!props.errors.profileImageUrl
+                    }
+                    helperText={
+                      props.touched.profileImageUrl &&
+                      props.errors.profileImageUrl
+                    }
                   />
                   <TextField
                     fullWidth
