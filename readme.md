@@ -1,129 +1,51 @@
-# User Profile Frontend (UK223)
+# Project Documentation
 
-A React TypeScript application for user/role/authority management with secure authentication, protected routes, and Material-UI interface.
+## How to start this application?
 
-## Table of Contents
+To start this application, follow these steps:
 
-- [Quick Start](#quick-start)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Testing](#testing)
-- [Security](#security)
-- [Project Structure](#project-structure)
+1.  **Launch Docker**: Ensure Docker is running on your machine.
+2.  **Start Backend**: Run the backend application.
+3.  **Start Frontend**: Navigate to the frontend directory and enter the following command:
+    `yarn dev`
 
-## Quick Start
-
-The application runs on `http://localhost:5173` after `yarn dev`.
-
-**Routes:**
-- `/` - Home (authenticated vs. non-authenticated)
-- `/login` - Authentication
-- `/admin` - Admin panel (ADMIN role required)
-- `/user` - User management table
-- `/user/edit` - Create/edit users
-
-**Default Login:**
-- Email: admin@example.com
-- Password: 1234
-
-## Prerequisites
-
-- Node.js 16+
-- Yarn
-
-## Installation
-
-```bash
-git clone <repository-url>
-cd 223_User_Profile_Frontend
-yarn install
-yarn dev
-```
-
-**Available Scripts:**
-```bash
-yarn dev         # Start development server
-yarn build       # Production build
-yarn test        # Unit tests (Vitest)
-yarn cypress:open # Cypress GUI
-yarn cypress:run  # Cypress headless
-```
-
-## Testing
-
-**Unit Testing:** Vitest + React Testing Library
-**E2E Testing:** Cypress with comprehensive workflows
-
-**Test Coverage:**
-- Authentication flows
-- User CRUD operations
-- Filtering and search
-- Form validation
-
-**Test Files:**
-- `cypress/e2e/test1.cy.ts` - Basic auth & search
-- `cypress/e2e/UC2.cy.ts` - User editing workflow
-- `cypress/e2e/UC5.cy.ts` - Filtering & deletion
-
-**Run Tests:**
-```bash
-yarn test                    # Unit tests
-yarn cypress:open           # GUI mode
-yarn cypress:run            # Headless mode
-```
-
-## Security
-
-**JWT Authentication:**
-- Tokens stored in localStorage
-- Automatic expiration handling
-- Axios interceptors for API requests
-
-**Role-Based Access Control:**
-- Roles: `DEFAULT`, `ADMIN`, `USER`
-- Authority system for granular permissions
-- Component-level protection
-
-**Security Features:**
-- Route protection with redirects
-- Admin-only UI elements
-- Secure API endpoints
-
-## Project Structure
-
-```
-src/
-├── components/pages/        # Page components
-├── Contexts/               # React contexts (auth, user)
-├── Router/                 # Route definitions & guards
-├── Services/              # API services & business logic
-├── config/                # App configuration
-├── types/                 # TypeScript definitions
-└── cypress/e2e/           # E2E test files
-```
-
-## Key Technologies
-
-- **Frontend:** React 18, TypeScript, Vite
-- **UI:** Material-UI (MUI) with Emotion
-- **Routing:** React Router v7
-- **Forms:** Formik + Yup validation
-- **HTTP:** Axios with interceptors
-- **Testing:** Vitest, React Testing Library, Cypress
-- **Build:** Vite
-
-## Troubleshooting
-
-**Common Issues:**
-- Check backend connectivity for API calls
-- Verify JWT token hasn't expired
-- Clear node_modules if installation fails
-
-**Development:**
-- Use browser dev tools for debugging
-- Check console logs for API errors
-- Run tests to validate functionality
+After these steps, you should be automatically forwarded to [http://localhost:3000](http://localhost:3000).
 
 ---
 
-This application provides a complete user management system with modern React practices, comprehensive security, and thorough testing coverage.
+## Login Daten
+
+| Email | Passwort | Rolle |
+| :--- | :--- | :--- |
+| admin@example.com | 1234 | Admin |
+| example@example.com | 1234 | User |
+
+---
+
+## Use Cases
+
+### 5.1 User Profile
+* **UC1**: User erstellt eigenes Profil
+* **UC2**: User liest und aktualisiert eigenes Profil
+* **UC3**: User löscht eigenes Profil
+* **UC4**: Admin löscht beliebiges UserProfile
+* **UC5**: Admin sucht, filtert und sortiert alle UserProfiles
+
+---
+
+## Testing
+
+We utilize three main testing methods:
+
+* **Cypress**: For end-to-end testing (primarily frontend-focused).
+* **Postman**: For component testing (backend-focused).
+* **Black Box testing**: A balanced combination of both.
+
+### Black Box Testing
+For the Black Box tests, we had a user with no prior knowledge of the code test the application; the results can be found in the documentation uploaded to our frontend repository.
+
+### Postman
+To use Postman, ensure that **Docker is running** and the **backend application is started**. You will also need Postman installed on your machine. Once installed, open the test files we provided to find various tests covering the entire application.
+
+### Cypress
+You can locate the test file in the frontend repository and execute it. These tests fully validate **Use Cases 2 and 5**. While other use cases are included in the testing suite, Use Cases 2 and 5 are the most comprehensively tested.
