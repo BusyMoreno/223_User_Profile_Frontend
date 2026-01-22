@@ -57,7 +57,8 @@ You can locate the test file in the frontend repository and execute it. These te
 | Route        | Zugriffsebene | Beschreibung        | Besonderheiten                                                     |
 |--------------|---------------|---------------------|--------------------------------------------------------------------|
 | `/`          | Öffentlich    | Home / Landing Page | Startpunkt der Anwendung.                                          |
-| `/user/login`| Öffentlich    | Login-Seite         | Authentifizierung für User und Admins.                             |
+| `/user/login`| Öffentlich    | Login-Seite         | Authentifizierung für User und Admins. Wenn man Sign-Up Link klickt|
+|              |               |                     | , kann man neue User erstelln                                      |
 | `/user`      | User          | Profil-Ansicht      | Ein regulärer User sieht hier nur seine eigenen Daten.             |
 | `/user`      | Admin         | Benutzerliste       | Ein Admin sieht hier alle registrierten Benutzer.                  |
 | `/user/admin`| Admin         | Dashboard           | Zentrales Management mit Filtern, Pagination und Sortierung.       |
